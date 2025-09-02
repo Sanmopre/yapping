@@ -10,7 +10,10 @@
 #include "ftxui/dom/elements.hpp"  // for text, hbox, separator, Element, operator|, vbox, border
 #include "ftxui/util/ref.hpp"  // for Ref
 
+#include "asio.hpp"
+
 int main() {
+
   using namespace ftxui;
 
   // The data:

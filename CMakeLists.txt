@@ -20,6 +20,7 @@ set(SERVER_INCLUDE_DIRS
 
 set(CLIENT_SOURCES
         src/client/main.cpp
+        src/client/tcp_client.h
 )
 
 set(SERVER_SOURCES

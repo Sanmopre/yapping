@@ -19,12 +19,12 @@ set(SERVER_INCLUDE_DIRS
 )
 
 set(CLIENT_SOURCES
-        src/client/main.cpp
-        src/client/tcp_client.h
+        packages/client/src/main.cpp
+        packages/client/src/tcp_client.h
 )
 
 set(SERVER_SOURCES
-        src/server/main.cpp
+        packages/server/src/main.cpp
 )
 
 include_directories(

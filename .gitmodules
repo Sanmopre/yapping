@@ -1,6 +1,13 @@
 [submodule "FTXUI"]
-	path = FTXUI
-	url = https://github.com/ArthurSonzogni/FTXUI.git
+    path = submodules/FTXUI
+    url = https://github.com/ArthurSonzogni/FTXUI.git
+
 [submodule "asio"]
-	path = asio
-	url = https://github.com/chriskohlhoff/asio
+    path = submodules/asio
+    url = https://github.com/chriskohlhoff/asio
+[submodule "submodules/FTXUI"]
+	path = submodules/FTXUI
+	url = https://github.com/ArthurSonzogni/FTXUI.git
+[submodule "submodules/asio"]
+	path = submodules/asio
+	url = https://github.com/chriskohlhoff/asio.git

@@ -1,10 +1,16 @@
 set(SERVER_INCLUDE_DIRS
         ${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/FTXUI/include
         ${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/asio/asio/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/nlohmann/
+        ../common/src/
+
 )
 
 set(SERVER_SOURCES
         src/main.cpp
+        src/tcp_server.h
+        ../common/src/global.h
+        ../common/src/messages.h
 )
 
 include_directories(

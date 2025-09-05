@@ -4,7 +4,9 @@
 int main() {
   SimpleTcpClient cli;
 
-  cli.on_connect([]{
+  cli.on_connect([&cli]
+  {
+      cli.write("sss");
       std::cout << "Connected!\n";
   });
 

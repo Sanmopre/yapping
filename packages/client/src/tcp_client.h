@@ -1,5 +1,7 @@
 #pragma once
 
+#include "messages.h"
+
 // asio
 #include "asio.hpp"
 
@@ -47,7 +49,13 @@ public:
     }
 
     // Send a line of text to the server. Appends '\n' if not present.
-    void write(std::string msg) {
+    void write(client::messages::ClientMessage clientMsg)
+    {
+        std::string msg = std::visit([](auto const& m)
+        {
+            return m.toString();
+        }, clientMsg);
+
         if (msg.empty() || msg.back() != '\n') msg.push_back('\n');
         asio::post(io_, [this, m = std::move(msg)]() mutable {
             if (!connected_ || !socket_.is_open()) return;
@@ -67,7 +75,8 @@ public:
     void on_disconnect(Handler&& h) { on_disconnect_ = std::forward<Handler>(h); }
 
 private:
-    void do_connect() {
+    void do_connect()
+    {
         resolver_ = asio::ip::tcp::resolver(io_);
 
         // Resolve host:port (IPv4 preferred)
@@ -103,22 +112,55 @@ private:
             });
     }
 
-    void finish_connected() {
+    void finish_connected()
+    {
         connected_ = true;
         if (on_connect_) on_connect_();
         do_read_loop();
     }
 
-    void do_read_loop() {
+    void do_read_loop()
+    {
         // Read newline-terminated frames
         asio::async_read_until(socket_, read_buf_, '\n',
             [this](std::error_code ec, std::size_t){
-                if (ec) { handle_disconnect(ec); return; }
+                if (ec)
+                {
+                    handle_disconnect(ec);
+                    return;
+                }
+
                 std::istream is(&read_buf_);
                 std::string line;
-                std::getline(is, line); // strips trailing '\n'
-                if (message_handler_) message_handler_(line);
-                if (connected_) do_read_loop();
+                std::getline(is, line);
+
+                if (message_handler_)
+                {
+                    const nlohmann::json data = nlohmann::json::parse(line, nullptr, false);
+                    if (data.is_discarded())
+                    {
+                        std::cerr << "Invalid json for message : " << line <<"\n";
+                    }
+
+                    const auto& content = data[PACKET_CONTENT_KEY];
+                    switch (data[PACKET_HEADER_KEY].get<ServerMessageType>())
+                    {
+                    case ServerMessageType::RECEIVED_MESSAGE:
+                        message_handler_(server::messages::NewMessageReceived{content});
+                        break;
+                    case ServerMessageType::USER_CONNECTED:
+                        message_handler_(server::messages::UserConnected{content});
+                        break;
+                    case ServerMessageType::USER_DISCONNECTED:
+                        message_handler_(server::messages::UserDisconnected{content});
+                        break;
+                    }
+                }
+
+                if (connected_)
+                {
+                    do_read_loop();
+                }
             });
     }
 
@@ -168,7 +210,7 @@ private:
     // Callbacks
     std::function<void()> on_connect_;
     std::function<void()> on_disconnect_;
-    std::function<void(const std::string&)> message_handler_;
+    std::function<void(const server::messages::ServerMessage&&)> message_handler_;
 
     // Target
     std::string host_;

@@ -17,10 +17,16 @@ using i64 = std::int64_t;
 using f32 = float;
 using f64 = double;
 
+// Content keys
 constexpr std::string_view USERNAME_KEY = "username";
 constexpr std::string_view TIMESTAMP_KEY = "timestamp";
 constexpr std::string_view MESSAGE_KEY = "message";
 constexpr std::string_view REASON_KEY = "reason";
+
+// Packet keys
+constexpr std::string_view PACKET_HEADER_KEY = "header";
+constexpr std::string_view PACKET_CONTENT_KEY = "content";
+
 
 enum class ServerMessageType
 {

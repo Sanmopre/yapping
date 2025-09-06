@@ -27,7 +27,17 @@ int main()
 
   cli.on_message([&](const server::messages::ServerMessage&& msg)
   {
-      std::ignore = msg;
+      std::visit(overloaded{
+  [](const server::messages::UserConnected& v) {
+      std::cout << "Connected = " << v.username << "\n";
+  },
+  [](const server::messages::UserDisconnected& v) {
+      std::cout << "User disconnected: = " << v.reason << "\n";
+  },
+  [](const server::messages::NewMessageReceived& v) {
+      std::cout << "Message = " << v.username << "\n";
+  }
+      }, msg);
   });
 
   cli.connect("127.0.0.1", 9000); // connect to your server

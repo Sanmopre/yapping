@@ -5,6 +5,7 @@
 #endif
 
 #include "global.h"
+#include "messages.h"
 
 // asio
 #include "asio.hpp"
@@ -55,7 +56,13 @@ public:
     }
 
     // Send a line to a specific client. Appends \n if absent.
-    void write(u64 client_id, std::string msg) {
+    void write(u64 client_id, server::messages::ServerMessage serverMsg)
+    {
+        std::string msg = std::visit([](auto const& m)
+        {
+            return m.toString();
+        }, serverMsg);
+
         if (msg.empty() || msg.back() != '\n') msg.push_back('\n');
         asio::post(io_, [this, client_id, m = std::move(msg)]() mutable {
             auto it = conns_.find(client_id);
@@ -68,7 +75,13 @@ public:
     }
 
     // Broadcast a line to all connected clients
-    void broadcast(std::string msg) {
+    void broadcast(server::messages::ServerMessage serverMsg)
+    {
+        std::string msg = std::visit([](auto const& m)
+        {
+            return m.toString();
+        }, serverMsg);
+
         if (msg.empty() || msg.back() != '\n') msg.push_back('\n');
         asio::post(io_, [this, m = std::move(msg)]() mutable {
             for (auto& [id, c] : conns_) {
@@ -133,8 +146,34 @@ private:
                 std::istream is(&self->read_buf);
                 std::string line;
                 std::getline(is, line); // strips '\n'
-                if (on_message_) on_message_(self->id, line);
-                if (self->socket.is_open()) do_read_loop(self);
+
+                if (on_message_)
+                {
+                    const nlohmann::json data = nlohmann::json::parse(line, nullptr, false);
+                    if (data.is_discarded())
+                    {
+                        std::cerr << "Invalid json for message : " << line <<"\n";
+                    }
+
+                    const auto& content = data[PACKET_CONTENT_KEY];
+                    switch (data[PACKET_HEADER_KEY].get<ClientMessageType>())
+                    {
+                    case ClientMessageType::DISCONNECTED:
+                        on_message_(self->id, client::messages::Disconnect{content});
+                        break;
+                    case ClientMessageType::INITIAL_CONNECTION:
+                        on_message_(self->id, client::messages::InitialConnection{content});
+                        break;
+                    case ClientMessageType::NEW_MESSAGE:
+                        on_message_(self->id, client::messages::NewMessage{content});
+                        break;
+                    }
+                }
+
+                if (self->socket.is_open())
+                {
+                    do_read_loop(self);
+                }
             });
     }
 
@@ -172,5 +211,5 @@ private:
     // Callbacks
     std::function<void(u64)> on_connect_;
     std::function<void(u64)> on_disconnect_;
-    std::function<void(u64, const std::string&)> on_message_;
+    std::function<void(u64, const client::messages::ClientMessage&)> on_message_;
 };

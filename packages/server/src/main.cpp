@@ -1,23 +1,33 @@
 #include "tcp_server.h"
+#include "cmake_constants.h"
+
+// cli11
+#include "CLI/CLI.hpp"
 
 // std
 #include <iostream>
 
-int main()
+int main(int argc, char **argv)
 {
-    const auto logger = getLogger("server", "logs/cli_chat.log");
-    logger->info("Starting server");
+    CLI::App serverApplication(SERVER_TARGET_NAME);
+    serverApplication.set_version_flag("--version", PROJECT_VERSION);
+
+    CLI11_PARSE(serverApplication, argc, argv);
+
+    const std::string logFile = std::string(SERVER_TARGET_NAME).append(getTimeStamp(currentSecondsSinceEpoch())).append(".log");
+    const auto logger = getLogger(SERVER_TARGET_NAME, logFile);
+    logger->info("Starting {} version {}", SERVER_TARGET_NAME, PROJECT_VERSION);
 
     SimpleTcpServerMulti srv(9000);
 
-    srv.on_connect([](u64 id)
+    srv.on_connect([&logger](u64 id)
     {
-        std::cout << "Client +" << id << "\n";
+        logger->info("Connected client with id {}", id);
     });
 
-    srv.on_disconnect([](u64 id)
+    srv.on_disconnect([&logger](u64 id)
     {
-        std::cout << "Client -" << id << "\n";
+        logger->info("Disconnected client with id {}", id);
     });
 
     srv.on_message([&](u64 id, const client::messages::ClientMessage& msg)

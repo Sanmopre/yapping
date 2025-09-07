@@ -1,9 +1,9 @@
 set(SERVER_INCLUDE_DIRS
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/FTXUI/include
         ${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/asio/asio/include
         ${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/nlohmann/
         ${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/CLI11/include
         ${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/spdlog/include
+        "${PROJECT_BINARY_DIR}/packages/common/src"
         ../common/src/
 )
 

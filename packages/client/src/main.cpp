@@ -1,13 +1,23 @@
 #include "tcp_client.h"
 #include "messages.h"
+#include "cmake_constants.h"
+
+// cli11
+#include "CLI/CLI.hpp"
 
 // std
 #include <iostream>
 
-int main()
+int main(int argc, char **argv)
 {
-  const auto logger = getLogger("cli_chat", "logs/cli_chat.log");
-  logger->info("Starting cli_chat");
+    CLI::App clientApplication(CLIENT_TARGET_NAME);
+    clientApplication.set_version_flag("--version", PROJECT_VERSION);
+
+CLI11_PARSE(clientApplication, argc, argv);
+
+  const std::string logFile = std::string(CLIENT_TARGET_NAME).append(getTimeStamp(currentSecondsSinceEpoch())).append(".log");
+  const auto logger = getLogger(CLIENT_TARGET_NAME, logFile);
+  logger->info("Starting {} version {}", CLIENT_TARGET_NAME, PROJECT_VERSION);
 
   SimpleTcpClient cli;
 

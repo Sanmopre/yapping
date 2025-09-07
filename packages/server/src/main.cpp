@@ -5,6 +5,9 @@
 
 int main()
 {
+    const auto logger = getLogger("server", "logs/cli_chat.log");
+    logger->info("Starting server");
+
     SimpleTcpServerMulti srv(9000);
 
     srv.on_connect([](u64 id)

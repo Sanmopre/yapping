@@ -4,31 +4,34 @@
 // std
 #include <iostream>
 
-
 int main()
 {
+  const auto logger = getLogger("cli_chat", "logs/cli_chat.log");
+  logger->info("Starting cli_chat");
+
   SimpleTcpClient cli;
 
-  cli.on_connect([&cli]
+  cli.on_connect([&cli, &logger]
   {
       client::messages::InitialConnection msg;
       msg.username = "testUser";
       cli.write(msg);
-      std::cout << "Connected!\n";
+      logger->info("Connected to server");
   });
 
-  cli.on_disconnect([&cli]
+  cli.on_disconnect([&cli, &logger]
   {
       client::messages::Disconnect msg;
       msg.reason = "Just left";
       cli.write(msg);
-      std::cout << "Disconnected.\n";
+      logger->info("Disconnected from server");
   });
 
-  cli.on_message([&](const server::messages::ServerMessage&& msg)
+  cli.on_message([&cli , &logger](const server::messages::ServerMessage&& msg)
   {
       std::visit(overloaded{
-  [](const server::messages::UserConnected& v) {
+  [](const server::messages::UserConnected& v)
+  {
       std::cout << "Connected = " << v.username << "\n";
   },
   [](const server::messages::UserDisconnected& v) {
@@ -40,7 +43,7 @@ int main()
       }, msg);
   });
 
-  cli.connect("127.0.0.1", 9000); // connect to your server
+  cli.connect("127.0.0.1", 9000);
 
   std::cout << "Type lines to send. Ctrl+C to quit.\n";
   std::string line;

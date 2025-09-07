@@ -1,8 +1,15 @@
 cmake_minimum_required(VERSION 3.11)
-project(cli_chat VERSION 1.0.0)
+project(cli_chat
+        VERSION 1.0.0
+)
 
+# Client properties
 set(CLIENT_TARGET_NAME cli_chat)
+set(CLIENT_DESCRIPTION "This is a cli chatting application that connects to a server.")
+
+# Server properties
 set(SERVER_TARGET_NAME server)
+set(SERVER_DESCRIPTION "This is the server for the cli_chat.")
 
 # Configuration file with constant cmake variables
 configure_file(

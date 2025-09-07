@@ -10,7 +10,7 @@
 
 int main(int argc, char **argv)
 {
-    CLI::App clientApplication(CLIENT_TARGET_NAME);
+    CLI::App clientApplication(CLIENT_DESCRIPTION);
     clientApplication.set_version_flag("--version", PROJECT_VERSION);
 
 CLI11_PARSE(clientApplication, argc, argv);

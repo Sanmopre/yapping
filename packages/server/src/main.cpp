@@ -9,8 +9,19 @@
 
 int main(int argc, char **argv)
 {
-    CLI::App serverApplication(SERVER_TARGET_NAME);
+    CLI::App serverApplication(SERVER_DESCRIPTION);
     serverApplication.set_version_flag("--version", PROJECT_VERSION);
+
+    std::string loggingFolder;
+    u16 port;
+
+    serverApplication.add_option("-l,--log-folder", loggingFolder, "Path tp the folder where the logs from the aplication will be generated.")
+       ->required()
+       ->check(CLI::ExistingDirectory);
+
+    serverApplication.add_option("-p,--port", port, "Server port for incoming connections")
+       ->required()
+       ->check(CLI::Range(1, 65535));
 
     CLI11_PARSE(serverApplication, argc, argv);
 
@@ -18,7 +29,7 @@ int main(int argc, char **argv)
     const auto logger = getLogger(SERVER_TARGET_NAME, logFile);
     logger->info("Starting {} version {}", SERVER_TARGET_NAME, PROJECT_VERSION);
 
-    SimpleTcpServerMulti srv(9000);
+    SimpleTcpServerMulti srv(port);
 
     srv.on_connect([&logger](u64 id)
     {

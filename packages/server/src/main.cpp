@@ -12,11 +12,10 @@ int main(int argc, char **argv)
     CLI::App serverApplication(SERVER_DESCRIPTION);
     serverApplication.set_version_flag("--version", PROJECT_VERSION);
 
-    std::string loggingFolder;
+    std::string loggingFolder = ".";
     u16 port;
 
-    serverApplication.add_option("-l,--log-folder", loggingFolder, "Path tp the folder where the logs from the aplication will be generated.")
-       ->required()
+    serverApplication.add_option("-l,--log-folder", loggingFolder, "Path tp the folder where the logs from the application will be generated.")
        ->check(CLI::ExistingDirectory);
 
     serverApplication.add_option("-p,--port", port, "Server port for incoming connections")
@@ -26,7 +25,7 @@ int main(int argc, char **argv)
     CLI11_PARSE(serverApplication, argc, argv);
 
     const std::string logFile = std::string(SERVER_TARGET_NAME).append(getTimeStamp(currentSecondsSinceEpoch())).append(".log");
-    const auto logger = getLogger(SERVER_TARGET_NAME, logFile);
+    const auto logger = getLogger(SERVER_TARGET_NAME, std::string(loggingFolder).append("/").append(logFile));
     logger->info("Starting {} version {}", SERVER_TARGET_NAME, PROJECT_VERSION);
 
     SimpleTcpServerMulti srv(port);

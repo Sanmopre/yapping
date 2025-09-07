@@ -13,6 +13,25 @@ int main(int argc, char **argv)
     CLI::App clientApplication(CLIENT_DESCRIPTION);
     clientApplication.set_version_flag("--version", PROJECT_VERSION);
 
+    // Arguments for the client
+    std::string username = "random";
+    std::string serverIp;
+    u16 serverPort;
+
+    clientApplication.add_option("-u,--username", username,
+        "Username for the client to use when connecting");
+
+    clientApplication.add_option("-i,--ip", serverIp,
+        "IPv4 address of the server to connect to")
+        ->required()
+        ->check(CLI::ValidIPV4);
+
+    clientApplication.add_option("-p,--port", serverPort,
+        "Port of the server to connect to")
+        ->required()
+        ->check(CLI::Range(1, 65535));
+
+
 CLI11_PARSE(clientApplication, argc, argv);
 
   const std::string logFile = std::string(CLIENT_TARGET_NAME).append(getTimeStamp(currentSecondsSinceEpoch())).append(".log");
@@ -53,7 +72,7 @@ CLI11_PARSE(clientApplication, argc, argv);
       }, msg);
   });
 
-  cli.connect("127.0.0.1", 9000);
+  cli.connect(serverIp, serverPort);
 
   std::cout << "Type lines to send. Ctrl+C to quit.\n";
   std::string line;

@@ -7,12 +7,13 @@
 // std
 #include <iostream>
 
+
 int main(int argc, char **argv)
 {
     CLI::App serverApplication(SERVER_DESCRIPTION);
     serverApplication.set_version_flag("--version", PROJECT_VERSION);
 
-    std::string loggingFolder = ".";
+    std::string loggingFolder = "./logs";
     u16 port;
 
     serverApplication.add_option("-l,--log-folder", loggingFolder, "Path tp the folder where the logs from the application will be generated.")
@@ -24,8 +25,14 @@ int main(int argc, char **argv)
 
     CLI11_PARSE(serverApplication, argc, argv);
 
-    const std::string logFile = std::string(SERVER_TARGET_NAME).append(getTimeStamp(currentSecondsSinceEpoch())).append(".log");
-    const auto logger = getLogger(SERVER_TARGET_NAME, std::string(loggingFolder).append("/").append(logFile));
+    const auto timeStampStringForFile = makeSafeForFilename(getTimeStamp(currentSecondsSinceEpoch()));
+    const std::string logFile = std::string(SERVER_TARGET_NAME) + "_" + timeStampStringForFile + ".log";
+
+    const auto logger = getLogger(
+        SERVER_TARGET_NAME,
+        (std::filesystem::path(loggingFolder) / logFile).string()
+    );
+
     logger->info("Starting {} version {}", SERVER_TARGET_NAME, PROJECT_VERSION);
 
     SimpleTcpServerMulti srv(port);
@@ -42,35 +49,62 @@ int main(int argc, char **argv)
 
     srv.on_message([&](u64 id, const client::messages::ClientMessage& msg)
     {
-        std::cout << "[" << id << "]  message index [" << msg.index() << "]\n";
-
         std::visit(overloaded{
-    [](const client::messages::Disconnect& v) {
-        std::cout << "Disconnect, reason = " << v.reason << "\n";
-    },
-    [](const client::messages::NewMessage& v) {
-        std::cout << "NewMessage, text = " << v.message << "\n";
-    },
-    [](const client::messages::InitialConnection& v) {
-        std::cout << "InitialConnection, username = " << v.username << "\n";
-    }
-        }, msg);
+    [&srv, id, &logger](const client::messages::Disconnect& v)
+            {
+                logger->info("Disconnected message client with id {}", id);
 
+                server::messages::UserDisconnected disconnect;
+                disconnect.reason = v.reason;
+                disconnect.timestamp = currentSecondsSinceEpoch();
 
+                if (const auto username = srv.getUsername(id); username.has_value())
+                {
+                    disconnect.username = username.value();
+                }
+                else
+                {
+                    logger->error("Invalid connection id {}", id);
+                }
 
+                srv.broadcast(disconnect);
+            },
+            [&srv, id, &logger](const client::messages::NewMessage& v)
+            {
+                logger->info("User {} said {}", id, v.message);
 
-        server::messages::NewMessageReceived newMsg;
+                server::messages::NewMessageReceived received;
+                received.timestamp = currentSecondsSinceEpoch();
+                received.message = v.message;
 
-        newMsg.message = "new message";
-        newMsg.timestamp = currentSecondsSinceEpoch();
-        newMsg.username = "server";
+                if (const auto username = srv.getUsername(id); username.has_value())
+                {
+                    received.username = username.value();
+                }
+                else
+                {
+                    logger->error("Invalid connection id {}", id);
+                }
 
-        srv.broadcast(newMsg);
+                srv.broadcast(received);
+            },
+            [&srv, id, &logger](const client::messages::InitialConnection& v)
+            {
+                logger->info("New user connected message id {} with username {}", id, v.username);
+
+                server::messages::UserConnected connect;
+                connect.timestamp = currentSecondsSinceEpoch();
+                connect.username = v.username;
+
+                srv.addNewUsername(id, v.username);
+                srv.broadcast(connect);
+            }
+    }, msg);
     });
 
     srv.start();
 
-    std::cout << "Server on :9000. Press Enter to quit.\n";
+    spdlog::info("Server started on port {}", port);
     std::cin.get();
     srv.stop();
 }

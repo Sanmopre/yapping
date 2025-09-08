@@ -9,6 +9,7 @@
 #include <string>
 #include <chrono>
 #include <variant>
+#include <filesystem>
 
 namespace server::messages
 {
@@ -191,6 +192,20 @@ using ClientMessage = std::variant<Disconnect, NewMessage, InitialConnection>;
     const std::chrono::system_clock::time_point tp{std::chrono::seconds(secondsSinceEpoch)};
     const std::time_t tt = std::chrono::system_clock::to_time_t(tp);
     return std::ctime(&tt);
+}
+
+[[nodiscard]] inline std::string makeSafeForFilename(const std::string& input)
+{
+    std::string result = input;
+    for (char& c : result)
+    {
+        if (std::isspace(static_cast<unsigned char>(c)) || c == ':' || c == '/' || c == '\\')
+            c = '_';
+    }
+    // strip trailing underscores (from the newline replacement)
+    while (!result.empty() && result.back() == '_')
+        result.pop_back();
+    return result;
 }
 
 [[nodiscard]] inline u64 currentSecondsSinceEpoch()

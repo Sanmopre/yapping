@@ -101,6 +101,20 @@ public:
     template <typename H>
     void on_disconnect(H&& h) { on_disconnect_ = std::forward<H>(h); }
 
+    [[nodiscard]] std::optional<std::string> getUsername(u64 connectionId) const noexcept
+    {
+        if (const auto it = idToUsernameMap_.find(connectionId); it != idToUsernameMap_.end())
+        {
+            return it->second;
+        }
+        return std::nullopt;
+    }
+
+    void addNewUsername(u64 connectionId, const std::string& username)
+    {
+        idToUsernameMap_[connectionId] = username;
+    }
+
 private:
     struct Conn : std::enable_shared_from_this<Conn> {
         explicit Conn(asio::io_context& io, u64 id)
@@ -206,7 +220,9 @@ private:
 
     std::unordered_map<u64, std::shared_ptr<Conn>> conns_;
     u64 next_id_{1};
+    std::unordered_map<u64, std::string> idToUsernameMap_;
 
+private:
     // Callbacks
     std::function<void(u64)> on_connect_;
     std::function<void(u64)> on_disconnect_;

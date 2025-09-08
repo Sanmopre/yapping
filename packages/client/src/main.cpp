@@ -16,6 +16,7 @@ int main(int argc, char **argv)
     // Arguments for the client
     std::string username = "random";
     std::string serverIp;
+    std::string loggingFolder = "./logs";
     u16 serverPort;
 
     clientApplication.add_option("-u,--username", username,
@@ -31,19 +32,28 @@ int main(int argc, char **argv)
         ->required()
         ->check(CLI::Range(1, 65535));
 
+    clientApplication.add_option("-l,--log-folder", loggingFolder, "Path tp the folder where the logs from the application will be generated.")
+   ->check(CLI::ExistingDirectory);
 
-CLI11_PARSE(clientApplication, argc, argv);
 
-  const std::string logFile = std::string(CLIENT_TARGET_NAME).append(getTimeStamp(currentSecondsSinceEpoch())).append(".log");
-  const auto logger = getLogger(CLIENT_TARGET_NAME, logFile);
+    CLI11_PARSE(clientApplication, argc, argv);
+
+    const auto timeStampStringForFile = makeSafeForFilename(getTimeStamp(currentSecondsSinceEpoch()));
+    const std::string logFile = std::string(CLIENT_TARGET_NAME) + "_" + timeStampStringForFile + ".log";
+
+    const auto logger = getLogger(
+        CLIENT_TARGET_NAME,
+        (std::filesystem::path(loggingFolder) / logFile).string()
+    );
+
   logger->info("Starting {} version {}", CLIENT_TARGET_NAME, PROJECT_VERSION);
 
   SimpleTcpClient cli;
 
-  cli.on_connect([&cli, &logger]
+  cli.on_connect([&cli, &logger, &username]
   {
       client::messages::InitialConnection msg;
-      msg.username = "testUser";
+      msg.username = username;
       cli.write(msg);
       logger->info("Connected to server");
   });

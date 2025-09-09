@@ -17,8 +17,8 @@ configure_file(
     "${PROJECT_BINARY_DIR}/packages/common/src/cmake_constants.h"
 )
 
-# Add FTXUI dependency
-add_subdirectory(submodules/FTXUI)
+# Add sdl2 dependency
+add_subdirectory(submodules/sdl)
 
 add_subdirectory(packages/client)
 add_subdirectory(packages/server)

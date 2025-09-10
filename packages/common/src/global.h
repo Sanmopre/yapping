@@ -12,7 +12,7 @@
 template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
 template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
-[[nodiscard]] std::shared_ptr<spdlog::logger> getLogger(const std::string& name, const std::string& path)
+[[nodiscard]] inline std::shared_ptr<spdlog::logger> getLogger(const std::string& name, const std::string& path)
 {
     const auto logger = spdlog::basic_logger_mt(name, path);
     spdlog::set_default_logger(logger);

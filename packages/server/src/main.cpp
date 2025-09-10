@@ -4,8 +4,7 @@
 // cli11
 #include "CLI/CLI.hpp"
 
-// std
-#include <iostream>
+#include "db_manager.h"
 
 
 int main(int argc, char **argv)
@@ -34,6 +33,56 @@ int main(int argc, char **argv)
     );
 
     logger->info("Starting {} version {}", SERVER_TARGET_NAME, PROJECT_VERSION);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    auto dbManager = DataBaseManager(logger.get());
+
+    server::messages::NewMessageReceived test;
+    test.message = "Hello World!";
+    test.timestamp = 23452345234;
+    test.username = "gagabubu";
+    dbManager.addMessageEntry(test);
+
+    const auto messages = dbManager.getMessages();
+
+    for (const auto& message : messages)
+    {
+        std::cout << message.message << std::endl;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     SimpleTcpServerMulti srv(port);
 

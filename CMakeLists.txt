@@ -3,6 +3,9 @@ project(cli_chat
         VERSION 1.0.0
 )
 
+option(BUILD_CLIENT "Build the client component" ON)
+option(BUILD_SERVER "Build the server component" ON)
+
 # Client properties
 set(CLIENT_TARGET_NAME cli_chat)
 set(CLIENT_DESCRIPTION "This is a cli chatting application that connects to a server.")
@@ -17,8 +20,12 @@ configure_file(
     "${PROJECT_BINARY_DIR}/packages/common/src/cmake_constants.h"
 )
 
-# Add sdl2 dependency
-add_subdirectory(submodules/sdl)
+if(BUILD_CLIENT)
+    # Add sdl2 dependency
+    add_subdirectory(submodules/sdl)
+    add_subdirectory(packages/client)
+endif ()
 
-add_subdirectory(packages/client)
-add_subdirectory(packages/server)
+if(BUILD_SERVER)
+    add_subdirectory(packages/server)
+endif ()

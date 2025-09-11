@@ -34,6 +34,8 @@ int main(int argc, char **argv)
 
     logger->info("Starting {} version {}", SERVER_TARGET_NAME, PROJECT_VERSION);
 
+    DataBaseManager dbManager{logger.get()};
+
     SimpleTcpServerMulti srv(port);
 
     srv.on_connect([&logger](u64 id)
@@ -68,7 +70,7 @@ int main(int argc, char **argv)
 
                 srv.broadcast(disconnect);
             },
-            [&srv, id, &logger](const client::messages::NewMessage& v)
+            [&srv, id, &logger, &dbManager](const client::messages::NewMessage& v)
             {
                 logger->info("User {} said {}", id, v.message);
 
@@ -85,15 +87,22 @@ int main(int argc, char **argv)
                     logger->error("Invalid connection id {}", id);
                 }
 
+                dbManager.addMessageEntry(received);
                 srv.broadcast(received);
             },
-            [&srv, id, &logger](const client::messages::InitialConnection& v)
+            [&srv, id, &logger,  &dbManager](const client::messages::InitialConnection& v)
             {
                 logger->info("New user connected message id {} with username {}", id, v.username);
 
                 server::messages::UserConnected connect;
                 connect.timestamp = currentSecondsSinceEpoch();
                 connect.username = v.username;
+
+                const auto previousMessages = dbManager.getMessages();
+                for (const auto& previousMessage : previousMessages)
+                {
+                    srv.write(id, previousMessage);
+                }
 
                 srv.addNewUsername(id, v.username);
                 srv.broadcast(connect);

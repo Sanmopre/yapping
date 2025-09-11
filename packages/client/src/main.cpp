@@ -1,11 +1,10 @@
 #include "tcp_client.h"
 #include "cmake_constants.h"
+#include "chat_imgui_components.h"
 
 // imgui
-#include "imgui.h"
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_sdlrenderer2.h"
-#include "imgui_internal.h"
 
 // std
 #include <stdio.h>
@@ -15,93 +14,6 @@
 
 // cli11
 #include "CLI/CLI.hpp"
-
-
-static void renderMessageBubble(const char* text,
-                          bool is_outgoing,
-                          float avail_width,
-                          ImU32 col_bg_incoming  = IM_COL32(235, 236, 240, 255), // light gray
-                          ImU32 col_bg_outgoing  = IM_COL32(180, 232, 149, 255), // green
-                          ImU32 col_text         = IM_COL32(0, 0, 0, 255))
-{
-    ImDrawList* dl = ImGui::GetWindowDrawList();
-
-    const float padding_x = 10.0f;
-    const float padding_y = 8.0f;
-    const float rounding  = 12.0f;
-    const float space_y   = 6.0f;
-
-    // Limit bubble width to ~65% of available space
-    float max_width = ImClamp(avail_width * 0.65f, 80.0f, avail_width);
-
-    // Measure text with wrapping
-    ImVec2 text_size = ImGui::CalcTextSize(text, nullptr, true, max_width);
-
-    // Bubble size = text + padding
-    ImVec2 bubble_size(text_size.x + padding_x * 2.0f,
-                       text_size.y + padding_y * 2.0f);
-
-    // Cursor position in screen space
-    ImVec2 cursor_screen = ImGui::GetCursorScreenPos();
-
-    // Horizontal placement
-    ImVec2 bubble_min;
-    if (is_outgoing) {
-        bubble_min.x = cursor_screen.x + avail_width - bubble_size.x;
-    } else {
-        bubble_min.x = cursor_screen.x;
-    }
-    bubble_min.y = cursor_screen.y;
-
-    ImVec2 bubble_max(bubble_min.x + bubble_size.x,
-                      bubble_min.y + bubble_size.y);
-
-    // Draw bubble background
-    ImU32 col_bg = is_outgoing ? col_bg_outgoing : col_bg_incoming;
-    dl->AddRectFilled(bubble_min, bubble_max, col_bg, rounding);
-
-    // Draw text
-    ImVec2 text_pos(bubble_min.x + padding_x, bubble_min.y + padding_y);
-    ImGui::SetCursorScreenPos(text_pos);
-
-    float inner_wrap = text_pos.x + (bubble_size.x - padding_x * 2.0f);
-    ImGui::PushTextWrapPos(inner_wrap);
-    ImGui::PushStyleColor(ImGuiCol_Text, col_text);
-    ImGui::TextUnformatted(text);
-    ImGui::PopStyleColor();
-    ImGui::PopTextWrapPos();
-
-    // Advance cursor for next bubble
-    ImGui::SetCursorScreenPos(ImVec2(cursor_screen.x, bubble_max.y + space_y));
-}
-
-void inline renderUserDisconnected(const server::messages::UserDisconnected& value)
-{
-   ImGui::Text(std::string("User").append(value.username).append(" disconnected at ").append(getTimeStamp(value.timestamp)).c_str());
-}
-
-void inline renderUserConnected(const server::messages::UserConnected& value)
-{
-    ImGui::Text(std::string("User").append(value.username).append(" connected at ").append(getTimeStamp(value.timestamp)).c_str());
-}
-
-void inline renderServerMessage(const server::messages::ServerMessage& msg)
-{
-    std::visit(overloaded{
-    [&msg](const server::messages::UserConnected& value)
-    {
-        renderUserConnected(value);
-    },
-    [&msg](const server::messages::UserDisconnected& value)
-    {
-        renderUserDisconnected(value);
-    },
-    [&msg](const server::messages::NewMessageReceived& value)
-    {
-        renderMessageBubble(value.message.c_str(), false, ImGui::GetContentRegionAvail().x);
-    }
-    }, msg);
-}
 
 
 // Main code
@@ -207,6 +119,7 @@ int main(int argc, char** argv)
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
     // Setup Platform/Renderer backends
     ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
@@ -241,6 +154,44 @@ int main(int argc, char** argv)
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
 
+
+
+
+
+
+
+        // If you want the dockspace to take the entire viewport:
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+        const ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+        ImGui::SetNextWindowViewport(viewport->ID);
+        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+        window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::Begin("DockSpace Demo", nullptr, window_flags);
+        ImGui::PopStyleVar(2);
+
+        // DockSpace ID
+        ImGuiID dockspace_id = ImGui::GetID("MyDockspace");
+        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+
+        ImGui::End();
+
+
+
+
+
+
+
+
+
+
+
+
+
         if (ImGui::Begin("Input"))
         {
             static char buf[256] = "";
@@ -261,18 +212,19 @@ int main(int argc, char** argv)
                 cli.write(msg);
                 buf[0] = '\0';
             }
-            ImGui::End();
+
         }
 
+        ImGui::End();
         if (ImGui::Begin("Chat"))
         {
             for (const auto& message : messages)
             {
-                renderServerMessage(message);
+                renderServerMessage(message, username);
             }
-            ImGui::End();
-        }
 
+        }
+        ImGui::End();
 
 
         // Rendering

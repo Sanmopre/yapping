@@ -34,6 +34,7 @@ set(CLIENT_SOURCES
         ../common/src/global.h
         ../common/src/messages.h
         ${IMGUI_SOURCES}
+        src/chat_imgui_components.h
 )
 
 include_directories(

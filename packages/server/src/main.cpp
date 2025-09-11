@@ -43,33 +43,27 @@ int main(int argc, char **argv)
         logger->info("Connected client with id {}", id);
     });
 
-    srv.on_disconnect([&logger](u64 id)
+    srv.on_disconnect([&logger, &srv](u64 id)
     {
         logger->info("Disconnected client with id {}", id);
+        server::messages::UserDisconnected disconnect;
+        disconnect.timestamp = currentSecondsSinceEpoch();
+
+        if (const auto username = srv.getUsername(id); username.has_value())
+        {
+            disconnect.username = username.value();
+        }
+        else
+        {
+            logger->error("Invalid connection id {}", id);
+        }
+
+        srv.broadcast(disconnect);
     });
 
     srv.on_message([&](u64 id, const client::messages::ClientMessage& msg)
     {
         std::visit(overloaded{
-    [&srv, id, &logger](const client::messages::Disconnect& v)
-            {
-                logger->info("Disconnected message client with id {}", id);
-
-                server::messages::UserDisconnected disconnect;
-                disconnect.reason = v.reason;
-                disconnect.timestamp = currentSecondsSinceEpoch();
-
-                if (const auto username = srv.getUsername(id); username.has_value())
-                {
-                    disconnect.username = username.value();
-                }
-                else
-                {
-                    logger->error("Invalid connection id {}", id);
-                }
-
-                srv.broadcast(disconnect);
-            },
             [&srv, id, &logger, &dbManager](const client::messages::NewMessage& v)
             {
                 logger->info("User {} said {}", id, v.message);

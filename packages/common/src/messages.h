@@ -76,7 +76,6 @@ struct UserDisconnected
     explicit UserDisconnected(const nlohmann::json& data)
     {
         username = data[USERNAME_KEY].get<std::string>();
-        reason = data[REASON_KEY].get<std::string>();
         timestamp = data[TIMESTAMP_KEY].get<u64>();
     }
     UserDisconnected() = default;
@@ -88,7 +87,6 @@ struct UserDisconnected
 
         nlohmann::json content;
         content[USERNAME_KEY] = username;
-        content[REASON_KEY] = reason;
         content[TIMESTAMP_KEY] = timestamp;
 
         data[PACKET_CONTENT_KEY] = content;
@@ -97,7 +95,6 @@ struct UserDisconnected
     }
 
     std::string username;
-    std::string reason;
     u64 timestamp;
 };
 
@@ -133,29 +130,6 @@ struct InitialConnection
     std::string username;
 };
 
-struct Disconnect
-{
-    explicit Disconnect(const nlohmann::json& data)
-    {
-        reason = data[REASON_KEY].get<std::string>();
-    }
-    Disconnect() = default;
-
-    [[nodiscard]] std::string toString() const noexcept
-    {
-        nlohmann::json data;
-        data[PACKET_HEADER_KEY] = ClientMessageType::DISCONNECTED;
-
-        nlohmann::json content;
-        content[REASON_KEY] = reason;
-
-        data[PACKET_CONTENT_KEY] = content;
-
-        return data.dump();
-    }
-
-    std::string reason;
-};
 
 struct NewMessage
 {
@@ -181,7 +155,7 @@ struct NewMessage
     std::string message;
 };
 
-using ClientMessage = std::variant<Disconnect, NewMessage, InitialConnection>;
+using ClientMessage = std::variant<NewMessage, InitialConnection>;
 
 }
 

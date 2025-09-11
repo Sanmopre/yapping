@@ -171,9 +171,6 @@ private:
                     const auto& content = data[PACKET_CONTENT_KEY];
                     switch (data[PACKET_HEADER_KEY].get<ClientMessageType>())
                     {
-                    case ClientMessageType::DISCONNECTED:
-                        on_message_(self->id, client::messages::Disconnect{content});
-                        break;
                     case ClientMessageType::INITIAL_CONNECTION:
                         on_message_(self->id, client::messages::InitialConnection{content});
                         break;

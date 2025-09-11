@@ -17,7 +17,7 @@
 #include "CLI/CLI.hpp"
 
 
-static void MessageBubble(const char* text,
+static void renderMessageBubble(const char* text,
                           bool is_outgoing,
                           float avail_width,
                           ImU32 col_bg_incoming  = IM_COL32(235, 236, 240, 255), // light gray
@@ -75,6 +75,34 @@ static void MessageBubble(const char* text,
     ImGui::SetCursorScreenPos(ImVec2(cursor_screen.x, bubble_max.y + space_y));
 }
 
+void inline renderUserDisconnected(const server::messages::UserDisconnected& value)
+{
+   ImGui::Text(std::string("User").append(value.username).append(" disconnected at ").append(getTimeStamp(value.timestamp)).c_str());
+}
+
+void inline renderUserConnected(const server::messages::UserConnected& value)
+{
+    ImGui::Text(std::string("User").append(value.username).append(" connected at ").append(getTimeStamp(value.timestamp)).c_str());
+}
+
+void inline renderServerMessage(const server::messages::ServerMessage& msg)
+{
+    std::visit(overloaded{
+    [&msg](const server::messages::UserConnected& value)
+    {
+        renderUserConnected(value);
+    },
+    [&msg](const server::messages::UserDisconnected& value)
+    {
+        renderUserDisconnected(value);
+    },
+    [&msg](const server::messages::NewMessageReceived& value)
+    {
+        renderMessageBubble(value.message.c_str(), false, ImGui::GetContentRegionAvail().x);
+    }
+    }, msg);
+}
+
 
 // Main code
 int main(int argc, char** argv)
@@ -118,7 +146,7 @@ int main(int argc, char** argv)
   logger->info("Starting {} version {}", CLIENT_TARGET_NAME, PROJECT_VERSION);
 
   SimpleTcpClient cli;
-    std::vector<server::messages::NewMessageReceived> messages;
+    std::vector<server::messages::ServerMessage> messages;
 
   cli.on_connect([&cli, &logger, &username]
   {
@@ -130,28 +158,12 @@ int main(int argc, char** argv)
 
   cli.on_disconnect([&cli, &logger]
   {
-      client::messages::Disconnect msg;
-      msg.reason = "Just left";
-      cli.write(msg);
       logger->info("Disconnected from server");
   });
 
   cli.on_message([&cli , &logger, &messages](const server::messages::ServerMessage&& msg)
   {
-      std::visit(overloaded{
-  [](const server::messages::UserConnected& v)
-  {
-      std::cout << "Connected = " << v.username << "\n";
-  },
-  [](const server::messages::UserDisconnected& v) {
-      std::cout << "User disconnected: = " << v.reason << "\n";
-  },
-  [&messages](const server::messages::NewMessageReceived& v)
-  {
-      messages.emplace_back(v);
-      std::cout << "Message = " << v.username << "\n";
-  }
-      }, msg);
+    messages.emplace_back(msg);
   });
 
   cli.connect(serverIp, serverPort);
@@ -254,10 +266,9 @@ int main(int argc, char** argv)
 
         if (ImGui::Begin("Chat"))
         {
-            float avail_width = ImGui::GetContentRegionAvail().x;
             for (const auto& message : messages)
             {
-                MessageBubble(message.message.c_str(), false, avail_width);
+                renderServerMessage(message);
             }
             ImGui::End();
         }

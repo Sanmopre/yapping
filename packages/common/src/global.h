@@ -55,6 +55,5 @@ enum class ServerMessageType
 enum class ClientMessageType
 {
     INITIAL_CONNECTION = 0,
-    DISCONNECTED = 1,
     NEW_MESSAGE = 2
 };

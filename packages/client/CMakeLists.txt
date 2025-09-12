@@ -47,9 +47,8 @@ add_executable(${CLIENT_TARGET_NAME}
         ${CLIENT_SOURCES}
 )
 
-target_compile_definitions(${CLIENT_TARGET_NAME} PRIVATE ASIO_STANDALONE)
+target_compile_definitions(${CLIENT_TARGET_NAME} PRIVATE ASIO_STANDALONE SDL_MAIN_HANDLED)
 target_link_libraries(${CLIENT_TARGET_NAME}
         PRIVATE
-        SDL2::SDL2
-        # SDL2::SDL2main    # not needed on Linux, usually needed on Windows
+        SDL2::SDL2-static
 )

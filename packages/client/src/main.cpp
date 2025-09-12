@@ -10,6 +10,7 @@
 #include <stdio.h>
 
 // sdl
+#define SDL_MAIN_HANDLED
 #include "SDL.h"
 
 // cli11

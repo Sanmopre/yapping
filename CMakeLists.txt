@@ -1,7 +1,15 @@
 cmake_minimum_required(VERSION 3.11)
-project(cli_chat
-        VERSION 1.0.0
-)
+
+project(cli_chat VERSION 1.0.0)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+if (MSVC)
+    add_compile_options(/utf-8 /permissive- /Zc:__cplusplus)
+    add_definitions(-DNOMINMAX -DWIN32_LEAN_AND_MEAN)
+endif()
 
 option(BUILD_CLIENT "Build the client component" ON)
 option(BUILD_SERVER "Build the server component" ON)
@@ -22,7 +30,10 @@ configure_file(
 
 if(BUILD_CLIENT)
     # Add sdl2 dependency
+    set(SDL_SHARED OFF CACHE BOOL "" FORCE)
+    set(SDL_STATIC ON  CACHE BOOL "" FORCE)
     add_subdirectory(submodules/sdl)
+
     add_subdirectory(packages/client)
 endif ()
 

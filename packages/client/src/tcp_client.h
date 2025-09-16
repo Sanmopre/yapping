@@ -20,7 +20,7 @@ public:
     ~SimpleTcpClient() { stop(); }
 
     // Connect to host:port (IPv4 or hostname). Starts internal IO thread.
-    void connect(const std::string& host, unsigned short port) {
+    void connect(const std::string& host, u16 port) {
         if (running_.exchange(true)) return;
         host_ = host;
         port_ = port;

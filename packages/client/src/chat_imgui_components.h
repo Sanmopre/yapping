@@ -7,7 +7,6 @@
 #include "imgui_internal.h"
 
 
-
 // Pass an optional small_font (e.g., 12–13px). If null, it uses current font.
 static void renderMessageBubble(const char* text,
                                 const char* author,
@@ -97,6 +96,7 @@ void inline renderUserConnected(const server::messages::UserConnected& value)
     const std::string msg = "User " + value.username + " connected at " + getTimeStamp(value.timestamp);
     ImGui::TextUnformatted(msg.c_str());
 }
+
 void inline renderServerMessage(const server::messages::ServerMessage& msg, const std::string& username)
 {
     std::visit(overloaded{
@@ -113,4 +113,36 @@ void inline renderServerMessage(const server::messages::ServerMessage& msg, cons
         renderMessageBubble(value.message.c_str(), value.username.c_str() , getTimeStamp(value.timestamp).c_str() , (username == value.username), ImGui::GetContentRegionAvail().x);
     }
     }, msg);
+}
+
+void inline renderUsersWindow(const std::map<std::string, bool>& usersMap)
+{
+    ImGui::Begin("Users");
+
+    for (const auto& [user, connected] : usersMap)
+    {
+        // Current cursor position in window space
+        ImVec2 pos = ImGui::GetCursorScreenPos();
+        float textHeight = ImGui::GetTextLineHeight();
+
+        // Circle radius based on text size
+        float radius = textHeight * 0.35f;
+        ImVec2 center = ImVec2(pos.x + radius + 2.0f, pos.y + textHeight * 0.5f);
+
+        // Pick color (green if connected, grey if not)
+        ImU32 color = connected ? IM_COL32(0, 200, 0, 255)
+                                : IM_COL32(128, 128, 128, 255);
+
+        // Draw circle
+        ImGui::GetWindowDrawList()->AddCircleFilled(center, radius, color, 16);
+
+        // Add horizontal spacing so text doesn't overlap circle
+        ImGui::Dummy(ImVec2(radius * 2.5f + 4.0f, textHeight));
+
+        // Draw username on the same line, aligned with the circle
+        ImGui::SameLine();
+        ImGui::TextUnformatted(user.c_str());
+    }
+
+    ImGui::End();
 }

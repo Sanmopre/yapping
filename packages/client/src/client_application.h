@@ -35,6 +35,6 @@ private:
 private:
     // Data containers
     const std::string username_;
-    std::map<std::string, bool> usersMap_;
-    std::vector<server::messages::ServerMessage> messages_;
+    std::map<std::string, UserStatusType> usersMap_;
+    std::vector<server::messages::NewMessageReceived> messages_;
 };

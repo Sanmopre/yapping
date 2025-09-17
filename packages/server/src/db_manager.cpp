@@ -4,7 +4,7 @@
 
 static constexpr std::string_view defaultDbPath = "chat.db";
 
-static constexpr std::string_view createTableSQL = R"SQL(
+static constexpr std::string_view createMessagesTableSQL = R"SQL(
 CREATE TABLE IF NOT EXISTS messages (
     id        INTEGER PRIMARY KEY AUTOINCREMENT,
     username  TEXT    NOT NULL,
@@ -13,11 +13,20 @@ CREATE TABLE IF NOT EXISTS messages (
 );
 )SQL";
 
+
+static constexpr std::string_view createUsersTableSQL = R"SQL(
+CREATE TABLE IF NOT EXISTS users (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    username  TEXT    NOT NULL,
+    password  TEXT    NOT NULL
+);
+)SQL";
+
 DataBaseManager::DataBaseManager(spdlog::logger *logger)
     : logger_(logger)
 {
-    if (const int rc = sqlite3_open(defaultDbPath.data(), &db_); rc != SQLITE_OK) {
-
+    if (const int rc = sqlite3_open(defaultDbPath.data(), &db_); rc != SQLITE_OK)
+    {
         const std::string err = sqlite3_errmsg(db_ ? db_ : nullptr);
         if (db_)
         {
@@ -25,10 +34,6 @@ DataBaseManager::DataBaseManager(spdlog::logger *logger)
         }
         logger_->error("Failed to open SQLite DB: {}", err);
     }
-
-    // Optional: make writes safer/faster tradeoffs here
-    // sqlite3_exec(db_, "PRAGMA journal_mode=WAL;", nullptr, nullptr, nullptr);
-    // sqlite3_exec(db_, "PRAGMA synchronous=NORMAL;", nullptr, nullptr, nullptr);
 
     ensureSchema();
 }
@@ -46,7 +51,14 @@ void DataBaseManager::ensureSchema() const noexcept
 {
     char* errMsg = nullptr;
 
-    if (const int rc = sqlite3_exec(db_, createTableSQL.data(), nullptr, nullptr, &errMsg); rc != SQLITE_OK)
+    if (const int rc = sqlite3_exec(db_, createMessagesTableSQL.data(), nullptr, nullptr, &errMsg); rc != SQLITE_OK)
+    {
+        std::string err = errMsg ? errMsg : "unknown error";
+        sqlite3_free(errMsg);
+        logger_->error("Failed to ensure schema: {}" ,err);
+    }
+
+    if (const int rc = sqlite3_exec(db_, createUsersTableSQL.data(), nullptr, nullptr, &errMsg); rc != SQLITE_OK)
     {
         std::string err = errMsg ? errMsg : "unknown error";
         sqlite3_free(errMsg);

@@ -46,19 +46,20 @@ int main(int argc, char **argv)
     srv.on_disconnect([&logger, &srv](u64 id)
     {
         logger->info("Disconnected client with id {}", id);
-        server::messages::UserDisconnected disconnect;
-        disconnect.timestamp = currentSecondsSinceEpoch();
+        server::messages::UserStatus status;
+        status.timestamp = currentSecondsSinceEpoch();
+        status.status = UserStatusType::OFFLINE;
 
         if (const auto username = srv.getUsername(id); username.has_value())
         {
-            disconnect.username = username.value();
+            status.username = username.value();
         }
         else
         {
             logger->error("Invalid connection id {}", id);
         }
 
-        srv.broadcast(disconnect);
+        srv.broadcast(status);
     });
 
     srv.on_message([&](u64 id, const client::messages::ClientMessage& msg)
@@ -88,9 +89,10 @@ int main(int argc, char **argv)
             {
                 logger->info("New user connected message id {} with username {}", id, v.username);
 
-                server::messages::UserConnected connect;
-                connect.timestamp = currentSecondsSinceEpoch();
-                connect.username = v.username;
+                server::messages::UserStatus status;
+                status.timestamp = currentSecondsSinceEpoch();
+                status.status = UserStatusType::ONLINE;
+                status.username = v.username;
 
                 const auto previousMessages = dbManager.getMessages();
                 for (const auto& previousMessage : previousMessages)
@@ -99,7 +101,7 @@ int main(int argc, char **argv)
                 }
 
                 srv.addNewUsername(id, v.username);
-                srv.broadcast(connect);
+                srv.broadcast(status);
             }
     }, msg);
     });

@@ -11,7 +11,6 @@
 #include <stdio.h>
 
 // sdl
-#define SDL_MAIN_HANDLED
 #include "SDL.h"
 
 // cli11
@@ -31,7 +30,13 @@ int main(int argc, char** argv)
     u16 serverPort;
 
     clientCliApplication.add_option("-u,--username", username,
-        "Username for the client to use when connecting");
+    "Username for the client to use when connecting")->check([](const std::string &input) {
+        if (input.size() > 12)
+        {
+            return std::string("Username must be at most 12 characters long");
+        }
+        return std::string{}; // no error
+    });
 
     clientCliApplication.add_option("-i,--ip", serverIp,
         "IPv4 address of the server to connect to")

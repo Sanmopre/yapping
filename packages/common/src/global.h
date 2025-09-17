@@ -39,17 +39,23 @@ constexpr std::string_view USERNAME_KEY = "username";
 constexpr std::string_view TIMESTAMP_KEY = "timestamp";
 constexpr std::string_view MESSAGE_KEY = "message";
 constexpr std::string_view REASON_KEY = "reason";
+constexpr std::string_view USER_STATUS_KEY = "status";
 
 // Packet keys
 constexpr std::string_view PACKET_HEADER_KEY = "header";
 constexpr std::string_view PACKET_CONTENT_KEY = "content";
 
+enum class UserStatusType
+{
+    ONLINE,
+    AWAY,
+    OFFLINE
+};
 
 enum class ServerMessageType
 {
     RECEIVED_MESSAGE = 0,
-    USER_DISCONNECTED = 1,
-    USER_CONNECTED = 2
+    USER_STATUS = 1
 };
 
 enum class ClientMessageType

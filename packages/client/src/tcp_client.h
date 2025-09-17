@@ -148,11 +148,8 @@ private:
                     case ServerMessageType::RECEIVED_MESSAGE:
                         message_handler_(server::messages::NewMessageReceived{content});
                         break;
-                    case ServerMessageType::USER_CONNECTED:
-                        message_handler_(server::messages::UserConnected{content});
-                        break;
-                    case ServerMessageType::USER_DISCONNECTED:
-                        message_handler_(server::messages::UserDisconnected{content});
+                    case ServerMessageType::USER_STATUS:
+                        message_handler_(server::messages::UserStatus{content});
                         break;
                     }
                 }

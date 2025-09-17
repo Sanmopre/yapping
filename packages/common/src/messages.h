@@ -44,23 +44,25 @@ struct NewMessageReceived
     u64 timestamp;
 };
 
-struct UserConnected
+struct UserStatus
 {
-    explicit UserConnected(const nlohmann::json& data)
+    explicit UserStatus(const nlohmann::json& data)
     {
         username = data[USERNAME_KEY].get<std::string>();
         timestamp = data[TIMESTAMP_KEY].get<u64>();
+        status = data[USER_STATUS_KEY].get<UserStatusType>();
     }
-    UserConnected() = default;
+    UserStatus() = default;
 
     [[nodiscard]] std::string toString() const noexcept
     {
         nlohmann::json data;
-        data[PACKET_HEADER_KEY] = ServerMessageType::USER_CONNECTED;
+        data[PACKET_HEADER_KEY] = ServerMessageType::USER_STATUS;
 
         nlohmann::json content;
         content[USERNAME_KEY] = username;
         content[TIMESTAMP_KEY] = timestamp;
+        content[USER_STATUS_KEY] = status;
 
         data[PACKET_CONTENT_KEY] = content;
 
@@ -68,37 +70,11 @@ struct UserConnected
     }
 
     std::string username;
+    UserStatusType status;
     u64 timestamp;
 };
 
-struct UserDisconnected
-{
-    explicit UserDisconnected(const nlohmann::json& data)
-    {
-        username = data[USERNAME_KEY].get<std::string>();
-        timestamp = data[TIMESTAMP_KEY].get<u64>();
-    }
-    UserDisconnected() = default;
-
-    [[nodiscard]] std::string toString() const noexcept
-    {
-        nlohmann::json data;
-        data[PACKET_HEADER_KEY] = ServerMessageType::USER_DISCONNECTED;
-
-        nlohmann::json content;
-        content[USERNAME_KEY] = username;
-        content[TIMESTAMP_KEY] = timestamp;
-
-        data[PACKET_CONTENT_KEY] = content;
-
-        return data.dump();
-    }
-
-    std::string username;
-    u64 timestamp;
-};
-
-using ServerMessage = std::variant<UserConnected, UserDisconnected, NewMessageReceived>;
+using ServerMessage = std::variant<UserStatus, NewMessageReceived>;
 
 }
 

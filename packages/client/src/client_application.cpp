@@ -25,9 +25,17 @@ ClientApplication::ClientApplication(const std::string& username, const std::str
 
     tcpClient_->on_message([&](const server::messages::ServerMessage&& msg)
     {
-      messages_.emplace_back(msg);
+        std::visit(overloaded{
+            [&](const server::messages::NewMessageReceived& value)
+            {
+                messages_.emplace_back(value);
+            },
+            [&](const server::messages::UserStatus& value)
+            {
+                usersMap_[value.username] = value.status;
+            }
+    }, msg);
     });
-
 
     tcpClient_->connect(host, port);
 }
@@ -105,15 +113,7 @@ void ClientApplication::render()
     preRender();
 
 
-
-
-    std::map<std::string, bool> usersMap;
-    usersMap["manolo"] = true;
-    usersMap["paco"] = true;
-    usersMap["lucas"] = false;
-    usersMap["pedro"] = true;
-    usersMap["javi"] = false;
-    renderUsersWindow(usersMap);
+    renderUsersWindow(usersMap_);
 
     if (ImGui::Begin("Input"))
     {

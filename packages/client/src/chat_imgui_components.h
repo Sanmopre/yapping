@@ -85,41 +85,16 @@ static void renderMessageBubble(const char* text,
     ImGui::SetCursorScreenPos(ImVec2(cursor.x, bubble_max.y + space_y));
 }
 
-void inline renderUserDisconnected(const server::messages::UserDisconnected& value)
+void inline renderServerMessage(const server::messages::NewMessageReceived& msg, const std::string& username)
 {
-    const std::string msg = "User " + value.username + " disconnected at " + getTimeStamp(value.timestamp);
-    ImGui::TextUnformatted(msg.c_str());
+    renderMessageBubble(msg.message.c_str(), msg.username.c_str() , getTimeStamp(msg.timestamp).c_str() , (username == msg.username), ImGui::GetContentRegionAvail().x);
 }
 
-void inline renderUserConnected(const server::messages::UserConnected& value)
-{
-    const std::string msg = "User " + value.username + " connected at " + getTimeStamp(value.timestamp);
-    ImGui::TextUnformatted(msg.c_str());
-}
-
-void inline renderServerMessage(const server::messages::ServerMessage& msg, const std::string& username)
-{
-    std::visit(overloaded{
-    [&msg](const server::messages::UserConnected& value)
-    {
-        renderUserConnected(value);
-    },
-    [&msg](const server::messages::UserDisconnected& value)
-    {
-        renderUserDisconnected(value);
-    },
-    [&msg, &username](const server::messages::NewMessageReceived& value)
-    {
-        renderMessageBubble(value.message.c_str(), value.username.c_str() , getTimeStamp(value.timestamp).c_str() , (username == value.username), ImGui::GetContentRegionAvail().x);
-    }
-    }, msg);
-}
-
-void inline renderUsersWindow(const std::map<std::string, bool>& usersMap)
+void inline renderUsersWindow(const std::map<std::string, UserStatusType>& usersMap)
 {
     ImGui::Begin("Users");
 
-    for (const auto& [user, connected] : usersMap)
+    for (const auto& [user, status] : usersMap)
     {
         // Current cursor position in window space
         ImVec2 pos = ImGui::GetCursorScreenPos();
@@ -129,9 +104,19 @@ void inline renderUsersWindow(const std::map<std::string, bool>& usersMap)
         float radius = textHeight * 0.35f;
         ImVec2 center = ImVec2(pos.x + radius + 2.0f, pos.y + textHeight * 0.5f);
 
-        // Pick color (green if connected, grey if not)
-        ImU32 color = connected ? IM_COL32(0, 200, 0, 255)
-                                : IM_COL32(128, 128, 128, 255);
+        ImU32 color;
+        switch (status)
+        {
+            case UserStatusType::AWAY:
+                color = IM_COL32(0, 200, 0, 255);
+                break;
+            case UserStatusType::OFFLINE:
+                color= IM_COL32(128, 128, 128, 255);
+                break;
+            case UserStatusType::ONLINE:
+                color = IM_COL32(0, 200, 0, 255);
+                break;
+        }
 
         // Draw circle
         ImGui::GetWindowDrawList()->AddCircleFilled(center, radius, color, 16);

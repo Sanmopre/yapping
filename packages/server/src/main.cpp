@@ -36,14 +36,17 @@ int main(int argc, char **argv)
 
     DataBaseManager dbManager{logger.get()};
 
+    std::map<std::string, UserStatusType> currentUsers;
+
+
     SimpleTcpServerMulti srv(port);
 
-    srv.on_connect([&logger](u64 id)
+    srv.on_connect([&](u64 id)
     {
         logger->info("Connected client with id {}", id);
     });
 
-    srv.on_disconnect([&logger, &srv](u64 id)
+    srv.on_disconnect([&](u64 id)
     {
         logger->info("Disconnected client with id {}", id);
         server::messages::UserStatus status;
@@ -53,6 +56,7 @@ int main(int argc, char **argv)
         if (const auto username = srv.getUsername(id); username.has_value())
         {
             status.username = username.value();
+            currentUsers[status.username] = UserStatusType::OFFLINE;
         }
         else
         {
@@ -85,7 +89,7 @@ int main(int argc, char **argv)
                 dbManager.addMessageEntry(received);
                 srv.broadcast(received);
             },
-            [&srv, id, &logger,  &dbManager](const client::messages::InitialConnection& v)
+            [&](const client::messages::InitialConnection& v)
             {
                 logger->info("New user connected message id {} with username {}", id, v.username);
 
@@ -94,10 +98,23 @@ int main(int argc, char **argv)
                 status.status = UserStatusType::ONLINE;
                 status.username = v.username;
 
+                // Add user to users map
+                currentUsers[status.username] = UserStatusType::ONLINE;
+
                 const auto previousMessages = dbManager.getMessages();
                 for (const auto& previousMessage : previousMessages)
                 {
                     srv.write(id, previousMessage);
+                }
+
+                for (const auto& [username, status] : currentUsers)
+                {
+                    server::messages::UserStatus currentUserStatus;
+                    currentUserStatus.username = username;
+                    currentUserStatus.status = status;
+                    currentUserStatus.timestamp = currentSecondsSinceEpoch();
+
+                    srv.write(id, currentUserStatus);
                 }
 
                 srv.addNewUsername(id, v.username);

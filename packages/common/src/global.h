@@ -34,6 +34,8 @@ using i64 = std::int64_t;
 using f32 = float;
 using f64 = double;
 
+constexpr u16 MAX_MESSAGE_LENGTH = 256;
+
 // Content keys
 constexpr std::string_view USERNAME_KEY = "username";
 constexpr std::string_view TIMESTAMP_KEY = "timestamp";

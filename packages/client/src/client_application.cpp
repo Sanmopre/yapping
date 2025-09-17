@@ -117,43 +117,41 @@ void ClientApplication::render()
 
     if (ImGui::Begin("Input"))
     {
-        static char buf[256] = "";
+        static char messageBuff[MAX_MESSAGE_LENGTH] = "";
 
         // Or if you want it to send on Enter:
-        if (ImGui::InputText("##msg", buf, IM_ARRAYSIZE(buf), ImGuiInputTextFlags_EnterReturnsTrue))
+        if (ImGui::InputText("##msg", messageBuff, IM_ARRAYSIZE(messageBuff), ImGuiInputTextFlags_EnterReturnsTrue))
         {
             client::messages::NewMessage msg;
-            msg.message = buf;
+            msg.message = messageBuff;
             tcpClient_->write(msg);
-            buf[0] = '\0';
+            messageBuff[0] = '\0';
         }
         ImGui::SameLine();
         if ( ImGui::Button("Send"))
         {
             client::messages::NewMessage msg;
-            msg.message = buf;
+            msg.message = messageBuff;
             tcpClient_->write(msg);
-            buf[0] = '\0';
+            messageBuff[0] = '\0';
         }
-
     }
 
     ImGui::End();
     if (ImGui::Begin("Chat"))
     {
-        for (const auto& message : messages_)
-        {
-            renderServerMessage(message, username_);
-        }
+        // Remember whether the user was at bottom *before* adding new items
+        float prev_y     = ImGui::GetScrollY();
+        float prev_max_y = ImGui::GetScrollMaxY();
+        bool was_at_bottom = prev_y >= prev_max_y - 1.0f;   // small epsilon
 
+        for (const auto& message : messages_)
+            renderServerMessage(message, username_);
+
+        if (was_at_bottom)
+            ImGui::SetScrollHereY(0.0f); // 1.0 = align last item to bottom
     }
     ImGui::End();
-
-
-
-
-
-
 
     // Post rendering functions needed for frame clean up
     postRender();

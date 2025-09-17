@@ -36,7 +36,7 @@ static void renderMessageBubble(const char* text,
                        text_size.y + padding_y * 2.0f);
 
     // Build meta header: "author • when"
-    char header[256];
+    char header[128];
     ImFormatString(header, IM_ARRAYSIZE(header), "%s  |  %s", author, when);
 
     // Measure header with small font if provided

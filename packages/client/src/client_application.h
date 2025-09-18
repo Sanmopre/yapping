@@ -7,32 +7,32 @@
 
 class ClientApplication
 {
-public:
-    ClientApplication(const std::string& username, const std::string& host, u16 port, spdlog::logger* logger);
+  public:
+    ClientApplication(const std::string &username, const std::string &host, u16 port, spdlog::logger *logger);
     ~ClientApplication();
 
-public:
+  public:
     [[nodiscard]] bool initialize();
     void update();
 
-public:
-    [[nodiscard]] SDL_Window* getWindow() const noexcept;
+  public:
+    [[nodiscard]] SDL_Window *getWindow() const noexcept;
 
-private:
+  private:
     void preRender();
     void postRender();
     void render();
 
-private:
-    spdlog::logger* logger_;
+  private:
+    spdlog::logger *logger_;
     std::unique_ptr<SimpleTcpClient> tcpClient_;
 
-private:
+  private:
     // sdl
-    SDL_Window* window_;
-    SDL_Renderer* renderer_;
+    SDL_Window *window_;
+    SDL_Renderer *renderer_;
 
-private:
+  private:
     // Data containers
     const std::string username_;
     std::map<std::string, UserStatusType> usersMap_;

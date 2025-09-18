@@ -6,17 +6,17 @@
 #include "json.hpp"
 
 // std
-#include <string>
 #include <chrono>
-#include <variant>
 #include <filesystem>
+#include <string>
+#include <variant>
 
 namespace server::messages
 {
 
 struct NewMessageReceived
 {
-    explicit NewMessageReceived(const nlohmann::json& data)
+    explicit NewMessageReceived(const nlohmann::json &data)
     {
         username = data[USERNAME_KEY].get<std::string>();
         message = data[MESSAGE_KEY].get<std::string>();
@@ -46,7 +46,7 @@ struct NewMessageReceived
 
 struct UserStatus
 {
-    explicit UserStatus(const nlohmann::json& data)
+    explicit UserStatus(const nlohmann::json &data)
     {
         username = data[USERNAME_KEY].get<std::string>();
         timestamp = data[TIMESTAMP_KEY].get<u64>();
@@ -76,15 +76,14 @@ struct UserStatus
 
 using ServerMessage = std::variant<UserStatus, NewMessageReceived>;
 
-}
-
+} // namespace server::messages
 
 namespace client::messages
 {
 
 struct InitialConnection
 {
-    explicit InitialConnection(const nlohmann::json& data)
+    explicit InitialConnection(const nlohmann::json &data)
     {
         username = data[USERNAME_KEY].get<std::string>();
     }
@@ -106,10 +105,9 @@ struct InitialConnection
     std::string username;
 };
 
-
 struct NewMessage
 {
-    explicit NewMessage(const nlohmann::json& data)
+    explicit NewMessage(const nlohmann::json &data)
     {
         message = data[MESSAGE_KEY].get<std::string>();
     }
@@ -133,9 +131,10 @@ struct NewMessage
 
 using ClientMessage = std::variant<NewMessage, InitialConnection>;
 
-}
+} // namespace client::messages
 
-// Timestamp functions ////////////////////////////////////////////////////////////
+// Timestamp functions
+// ////////////////////////////////////////////////////////////
 
 [[nodiscard]] inline std::string getTimeStamp(u64 secondsSinceEpoch)
 {
@@ -144,10 +143,10 @@ using ClientMessage = std::variant<NewMessage, InitialConnection>;
     return std::ctime(&tt);
 }
 
-[[nodiscard]] inline std::string makeSafeForFilename(const std::string& input)
+[[nodiscard]] inline std::string makeSafeForFilename(const std::string &input)
 {
     std::string result = input;
-    for (char& c : result)
+    for (char &c : result)
     {
         if (std::isspace(static_cast<unsigned char>(c)) || c == ':' || c == '/' || c == '\\')
             c = '_';
@@ -161,7 +160,5 @@ using ClientMessage = std::variant<NewMessage, InitialConnection>;
 [[nodiscard]] inline u64 currentSecondsSinceEpoch()
 {
     const auto currentTime = std::chrono::system_clock::now();
-    return std::chrono::duration_cast<std::chrono::seconds>(
-        currentTime.time_since_epoch()).count();
+    return std::chrono::duration_cast<std::chrono::seconds>(currentTime.time_since_epoch()).count();
 }
-

@@ -5,14 +5,17 @@
 #include <string>
 
 // spdlog
-#include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
+#include "spdlog/spdlog.h"
 
 // overloaded
-template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+template <class... Ts> struct overloaded : Ts...
+{
+    using Ts::operator()...;
+};
+template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
-[[nodiscard]] inline std::shared_ptr<spdlog::logger> getLogger(const std::string& name, const std::string& path)
+[[nodiscard]] inline std::shared_ptr<spdlog::logger> getLogger(const std::string &name, const std::string &path)
 {
     const auto logger = spdlog::basic_logger_mt(name, path);
     spdlog::set_default_logger(logger);
@@ -21,12 +24,12 @@ template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 }
 
 // types
-using u8  = std::uint8_t;
+using u8 = std::uint8_t;
 using u16 = std::uint16_t;
 using u32 = std::uint32_t;
 using u64 = std::uint64_t;
 
-using i8  = std::int8_t;
+using i8 = std::int8_t;
 using i16 = std::int16_t;
 using i32 = std::int32_t;
 using i64 = std::int64_t;

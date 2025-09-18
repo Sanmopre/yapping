@@ -7,34 +7,24 @@
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_sdlrenderer2.h"
 
-ClientApplication::ClientApplication(const std::string& username, const std::string& host, u16 port, spdlog::logger* logger)
+ClientApplication::ClientApplication(const std::string &username, const std::string &host, u16 port,
+                                     spdlog::logger *logger)
     : username_(username), logger_(logger), tcpClient_(std::make_unique<SimpleTcpClient>())
 {
-    tcpClient_->on_connect([&]
-    {
+    tcpClient_->on_connect([&] {
         client::messages::InitialConnection msg;
         msg.username = username_;
         tcpClient_->write(msg);
         logger_->info("Connected to server");
     });
 
-    tcpClient_->on_disconnect([&]
-    {
-        logger_->info("Disconnected from server");
-    });
+    tcpClient_->on_disconnect([&] { logger_->info("Disconnected from server"); });
 
-    tcpClient_->on_message([&](const server::messages::ServerMessage&& msg)
-    {
-        std::visit(overloaded{
-            [&](const server::messages::NewMessageReceived& value)
-            {
-                messages_.emplace_back(value);
-            },
-            [&](const server::messages::UserStatus& value)
-            {
-                usersMap_[value.username] = value.status;
-            }
-    }, msg);
+    tcpClient_->on_message([&](const server::messages::ServerMessage &&msg) {
+        std::visit(
+            overloaded{[&](const server::messages::NewMessageReceived &value) { messages_.emplace_back(value); },
+                       [&](const server::messages::UserStatus &value) { usersMap_[value.username] = value.status; }},
+            msg);
     });
 
     tcpClient_->connect(host, port);
@@ -71,7 +61,8 @@ bool ClientApplication::initialize()
 
     // Create window with SDL_Renderer graphics context
     constexpr auto window_flags = static_cast<SDL_WindowFlags>(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-    window_ = SDL_CreateWindow("Dear ImGui SDL2+SDL_Renderer example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
+    window_ = SDL_CreateWindow("Dear ImGui SDL2+SDL_Renderer example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                               1280, 720, window_flags);
     if (window_ == nullptr)
     {
         logger_->error("Failed to create window - {}", SDL_GetError());
@@ -112,7 +103,6 @@ void ClientApplication::render()
     // Pre render functions needed for rendering
     preRender();
 
-
     renderUsersWindow(usersMap_);
 
     if (ImGui::Begin("Input"))
@@ -128,7 +118,7 @@ void ClientApplication::render()
             messageBuff[0] = '\0';
         }
         ImGui::SameLine();
-        if ( ImGui::Button("Send"))
+        if (ImGui::Button("Send"))
         {
             client::messages::NewMessage msg;
             msg.message = messageBuff;
@@ -141,11 +131,11 @@ void ClientApplication::render()
     if (ImGui::Begin("Chat"))
     {
         // Remember whether the user was at bottom *before* adding new items
-        float prev_y     = ImGui::GetScrollY();
+        float prev_y = ImGui::GetScrollY();
         float prev_max_y = ImGui::GetScrollMaxY();
-        bool was_at_bottom = prev_y >= prev_max_y - 1.0f;   // small epsilon
+        bool was_at_bottom = prev_y >= prev_max_y - 1.0f; // small epsilon
 
-        for (const auto& message : messages_)
+        for (const auto &message : messages_)
             renderServerMessage(message, username_);
 
         if (was_at_bottom)
@@ -157,7 +147,7 @@ void ClientApplication::render()
     postRender();
 }
 
-SDL_Window * ClientApplication::getWindow() const noexcept
+SDL_Window *ClientApplication::getWindow() const noexcept
 {
     return window_;
 }
@@ -171,11 +161,12 @@ void ClientApplication::preRender()
 
     // If you want the dockspace to take the entire viewport:
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    const ImGuiViewport *viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
     ImGui::SetNextWindowSize(viewport->WorkSize);
     ImGui::SetNextWindowViewport(viewport->ID);
-    window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+    window_flags |=
+        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
     window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);

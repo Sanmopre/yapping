@@ -1,11 +1,16 @@
 #include "client_application.h"
-
 #include "chat_imgui_components.h"
 
 // imgui
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_sdlrenderer2.h"
+
+// hex_dumps
+#include "logo.h"
+
+// cmake_constants
+#include "cmake_constants.h"
 
 ClientApplication::ClientApplication(const std::string &username, const std::string &host, u16 port,
                                      spdlog::logger *logger)
@@ -61,7 +66,7 @@ bool ClientApplication::initialize()
 
     // Create window with SDL_Renderer graphics context
     constexpr auto window_flags = static_cast<SDL_WindowFlags>(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-    window_ = SDL_CreateWindow("Dear ImGui SDL2+SDL_Renderer example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+    window_ = SDL_CreateWindow(CLIENT_TARGET_NAME, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                1280, 720, window_flags);
     if (window_ == nullptr)
     {
@@ -89,6 +94,13 @@ bool ClientApplication::initialize()
     // Setup Platform/Renderer backends
     ImGui_ImplSDL2_InitForSDLRenderer(window_, renderer_);
     ImGui_ImplSDLRenderer2_Init(renderer_);
+
+
+    // Load logo texture
+    SDL_RWops* rw = SDL_RWFromConstMem(logo_bmp, logo_bmp_len);
+    SDL_Surface* surface = SDL_LoadBMP_RW(rw, 0);
+    logoTexture_ = SDL_CreateTextureFromSurface(renderer_, surface);
+    SDL_FreeSurface(surface);
 
     return true;
 }
@@ -126,21 +138,27 @@ void ClientApplication::render()
             messageBuff[0] = '\0';
         }
     }
-
     ImGui::End();
+
     if (ImGui::Begin("Chat"))
     {
-        // Remember whether the user was at bottom *before* adding new items
-        float prev_y = ImGui::GetScrollY();
-        float prev_max_y = ImGui::GetScrollMaxY();
-        bool was_at_bottom = prev_y >= prev_max_y - 1.0f; // small epsilon
+        bool isAtBottom =  ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 1.0f;
 
         for (const auto &message : messages_)
-            renderServerMessage(message, username_);
+        {            renderServerMessage(message, username_);}
 
-        if (was_at_bottom)
-            ImGui::SetScrollHereY(0.0f); // 1.0 = align last item to bottom
+        if (isAtBottom)
+        {            ImGui::SetScrollHereY(0.0f);}
+
     }
+    ImGui::End();
+
+
+    if (ImGui::Begin("Logo"))
+    {
+    ImGui::Image(reinterpret_cast<ImTextureID>(logoTexture_), ImVec2(128,128));
+    }
+
     ImGui::End();
 
     // Post rendering functions needed for frame clean up

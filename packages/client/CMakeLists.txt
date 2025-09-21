@@ -24,7 +24,8 @@ set(CLIENT_INCLUDE_DIRS
         ${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/imgui/
         ${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/imgui/backends
         ${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/sdl/include
-        "${PROJECT_BINARY_DIR}/packages/common/src"
+        ${PROJECT_BINARY_DIR}/packages/common/src
+        ../common/hex_dumps/images
         ../common/src/
 )
 

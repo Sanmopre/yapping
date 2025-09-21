@@ -31,6 +31,7 @@ class ClientApplication
     // sdl
     SDL_Window *window_;
     SDL_Renderer *renderer_;
+    SDL_Texture* logoTexture_;
 
   private:
     // Data containers

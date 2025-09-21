@@ -14,7 +14,7 @@
 
 ClientApplication::ClientApplication(const std::string &username, const std::string &host, u16 port,
                                      spdlog::logger *logger)
-    : username_(username), logger_(logger), tcpClient_(std::make_unique<SimpleTcpClient>())
+    : logger_(logger), tcpClient_(std::make_unique<SimpleTcpClient>()), username_(username)
 {
     tcpClient_->on_connect([&] {
         client::messages::InitialConnection msg;
@@ -117,6 +117,13 @@ void ClientApplication::render()
 
     renderUsersWindow(usersMap_);
 
+
+    if (ImGui::BeginMainMenuBar())
+    {
+        ImGui::Image(reinterpret_cast<ImTextureID>(logoTexture_), ImVec2(27,27));
+    }
+    ImGui::EndMainMenuBar();
+
     if (ImGui::Begin("Input"))
     {
         static char messageBuff[MAX_MESSAGE_LENGTH] = "";
@@ -153,13 +160,6 @@ void ClientApplication::render()
     }
     ImGui::End();
 
-
-    if (ImGui::Begin("Logo"))
-    {
-    ImGui::Image(reinterpret_cast<ImTextureID>(logoTexture_), ImVec2(128,128));
-    }
-
-    ImGui::End();
 
     // Post rendering functions needed for frame clean up
     postRender();

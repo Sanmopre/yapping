@@ -252,5 +252,5 @@ class SimpleTcpClient
 
     // Target
     std::string host_;
-    unsigned short port_{0};
+    u16 port_{0};
 };

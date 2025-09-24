@@ -45,6 +45,10 @@ constexpr std::string_view TIMESTAMP_KEY = "timestamp";
 constexpr std::string_view MESSAGE_KEY = "message";
 constexpr std::string_view REASON_KEY = "reason";
 constexpr std::string_view USER_STATUS_KEY = "status";
+constexpr std::string_view USER_COLOR_KEY = "color";
+constexpr std::string_view COLOR_RED_KEY = "red";
+constexpr std::string_view COLOR_GREEN_KEY = "green";
+constexpr std::string_view COLOR_BLUE_KEY = "blue";
 
 // Packet keys
 constexpr std::string_view PACKET_HEADER_KEY = "header";

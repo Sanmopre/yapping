@@ -78,16 +78,18 @@ static void renderMessageBubble(const std::string& text, const std::string& auth
     ImGui::SetCursorScreenPos(ImVec2(cursor.x, bubble_max.y + space_y));
 }
 
-void inline renderServerMessage(const server::messages::NewMessageReceived &msg, const std::string &username)
+void inline renderServerMessage(const server::messages::NewMessageReceived &msg, const std::string &username, server::messages::UserColor color)
 {
-    renderMessageBubble(msg.message, msg.username, getTimeStamp(msg.timestamp),(username == msg.username), ImGui::GetContentRegionAvail().x);
+    renderMessageBubble(msg.message, msg.username, getTimeStamp(msg.timestamp),(username == msg.username),
+        ImGui::GetContentRegionAvail().x
+        ,nullptr, IM_COL32(color.red, color.green, color.blue, 255) );
 }
 
-void inline renderUsersWindow(const std::map<std::string, UserStatusType> &usersMap)
+void inline renderUsersWindow(const std::map<std::string, UserData> &usersMap)
 {
     ImGui::Begin("Users");
 
-    for (const auto &[user, status] : usersMap)
+    for (const auto &[user, data] : usersMap)
     {
         // Current cursor position in window space
         ImVec2 pos = ImGui::GetCursorScreenPos();
@@ -98,7 +100,7 @@ void inline renderUsersWindow(const std::map<std::string, UserStatusType> &users
         ImVec2 center = ImVec2(pos.x + radius + 2.0f, pos.y + textHeight * 0.5f);
 
         ImU32 color;
-        switch (status)
+        switch (data.status)
         {
         case UserStatusType::AWAY:
             color = IM_COL32(0, 200, 0, 255);

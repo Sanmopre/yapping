@@ -28,7 +28,11 @@ ClientApplication::ClientApplication(const std::string &username, const std::str
     tcpClient_->on_message([&](const server::messages::ServerMessage &&msg) {
         std::visit(
             overloaded{[&](const server::messages::NewMessageReceived &value) { messages_.emplace_back(value); },
-                       [&](const server::messages::UserStatus &value) { usersMap_[value.username] = value.status; }},
+                       [&](const server::messages::UserStatus &value)
+                       {
+                           usersMap_[value.username].status = value.status;
+                           usersMap_[value.username].color = value.color;
+                       }},
             msg);
     });
 
@@ -151,7 +155,7 @@ void ClientApplication::render()
         bool isAtBottom =  ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 1.0f;
 
         for (const auto &message : messages_)
-        {            renderServerMessage(message, username_);}
+        {            renderServerMessage(message, username_, usersMap_.at(message.username).color);}
 
         if (isAtBottom)
         {            ImGui::SetScrollHereY(0.0f);}

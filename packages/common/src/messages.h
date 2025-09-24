@@ -14,6 +14,13 @@
 namespace server::messages
 {
 
+struct UserColor
+{
+    u8 red = 0;
+    u8 green = 0;
+    u8 blue = 0;
+};
+
 struct NewMessageReceived
 {
     explicit NewMessageReceived(const nlohmann::json &data)
@@ -51,6 +58,9 @@ struct UserStatus
         username = data[USERNAME_KEY].get<std::string>();
         timestamp = data[TIMESTAMP_KEY].get<u64>();
         status = data[USER_STATUS_KEY].get<UserStatusType>();
+        color.red = data[USER_COLOR_KEY][COLOR_RED_KEY].get<u8>();
+        color.blue = data[USER_COLOR_KEY][COLOR_BLUE_KEY].get<u8>();
+        color.green = data[USER_COLOR_KEY][COLOR_GREEN_KEY].get<u8>();
     }
     UserStatus() = default;
 
@@ -63,6 +73,9 @@ struct UserStatus
         content[USERNAME_KEY] = username;
         content[TIMESTAMP_KEY] = timestamp;
         content[USER_STATUS_KEY] = status;
+        content[USER_COLOR_KEY][COLOR_RED_KEY] = color.red;
+        content[USER_COLOR_KEY][COLOR_BLUE_KEY]= color.blue;
+        content[USER_COLOR_KEY][COLOR_GREEN_KEY]= color.green;
 
         data[PACKET_CONTENT_KEY] = content;
 
@@ -71,6 +84,7 @@ struct UserStatus
 
     std::string username;
     UserStatusType status;
+    UserColor color;
     u64 timestamp;
 };
 
@@ -162,3 +176,9 @@ using ClientMessage = std::variant<NewMessage, InitialConnection>;
     const auto currentTime = std::chrono::system_clock::now();
     return std::chrono::duration_cast<std::chrono::seconds>(currentTime.time_since_epoch()).count();
 }
+
+struct UserData
+{
+    UserStatusType status;
+    server::messages::UserColor color;
+};

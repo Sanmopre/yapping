@@ -5,6 +5,7 @@
 // sdl2
 #include "SDL.h"
 
+
 class ClientApplication
 {
   public:
@@ -36,6 +37,6 @@ class ClientApplication
   private:
     // Data containers
     const std::string username_;
-    std::map<std::string, UserStatusType> usersMap_;
+    std::map<std::string, UserData> usersMap_;
     std::vector<server::messages::NewMessageReceived> messages_;
 };

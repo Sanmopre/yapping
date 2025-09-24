@@ -155,7 +155,17 @@ void ClientApplication::render()
         bool isAtBottom =  ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 1.0f;
 
         for (const auto &message : messages_)
-        {            renderServerMessage(message, username_, usersMap_.at(message.username).color);}
+        {
+            if (const auto it = usersMap_.find(message.username); it != usersMap_.end())
+            {
+                renderServerMessage(message, username_, usersMap_.at(message.username).color);
+            }
+            else
+            {
+                logger_->error("User {} not found in users map, can not display message with color", message.username);
+                renderServerMessage(message, username_, server::messages::UserColor{100, 100, 100});
+            }
+        }
 
         if (isAtBottom)
         {            ImGui::SetScrollHereY(0.0f);}

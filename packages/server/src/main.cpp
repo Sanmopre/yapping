@@ -135,8 +135,12 @@ int main(int argc, char **argv)
                 logger->info("New user connected message id {} with username {}", id, v.username);
 
                 // Add user to users map
+                if (const auto it = currentUsers.find(v.username); it == currentUsers.end())
+                {
+                    // If its the first time a user is registered, we assign a random color
+                    currentUsers[v.username].color =  getRandomColor();
+                }
                 currentUsers[v.username].status = UserStatusType::ONLINE;
-                currentUsers[v.username].color =  getRandomColor();
 
                 server::messages::UserStatus status;
                 status.timestamp = currentSecondsSinceEpoch();

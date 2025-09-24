@@ -55,3 +55,7 @@ target_link_libraries(${CLIENT_TARGET_NAME}
         PRIVATE
         SDL2::SDL2-static
 )
+
+if (WIN32)
+    target_link_libraries(${CLIENT_TARGET_NAME} PRIVATE ws2_32)
+endif()

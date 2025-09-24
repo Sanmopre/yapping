@@ -25,26 +25,66 @@ jobs:
         with:
           submodules: recursive
 
-      # Ninja for consistent multi-OS builds (optional but nice)
+      # ---------- Linux ----------
       - name: Install Ninja (Linux)
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y ninja-build
-      - name: Install Ninja (macOS)
-        if: runner.os == 'macOS'
-        run: brew install ninja
-      # Windows runners already have Ninja
-
-      - name: Configure
+      - name: Configure (Linux)
+        if: runner.os == 'Linux'
         run: >
           cmake -S . -B build
           -G Ninja
           -DCMAKE_BUILD_TYPE=${{ matrix.config }}
           -DCMAKE_CXX_STANDARD=17
+      - name: Build (Linux)
+        if: runner.os == 'Linux'
+        run: cmake --build build -- -k 0 -j 2
 
-      - name: Build
-        run: cmake --build build --config ${{ matrix.config }} -- -k 0 -j 2
+      # ---------- macOS ----------
+      - name: Install Ninja (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ninja
+      - name: Configure (macOS)
+        if: runner.os == 'macOS'
+        run: >
+          cmake -S . -B build
+          -G Ninja
+          -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+          -DCMAKE_CXX_STANDARD=17
+      - name: Build (macOS)
+        if: runner.os == 'macOS'
+        run: cmake --build build -- -k 0 -j 2
 
-      # Optional: upload the built binaries so you can download them from the run page
+      # ---------- Windows (MSYS2 / MinGW-w64 like CLion) ----------
+      - name: Setup MSYS2 with MinGW-w64 (Windows)
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          msystem: MINGW64
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+
+      - name: Configure (Windows MinGW)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: >
+          cmake -S . -B build
+          -G Ninja
+          -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+          -DCMAKE_C_STANDARD=11
+          -DCMAKE_CXX_STANDARD=17
+          -DCMAKE_C_COMPILER=gcc
+          -DCMAKE_CXX_COMPILER=g++
+
+      - name: Build (Windows MinGW)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: cmake --build build -- -j 2
+
+      # ---------- Artifacts (all OS) ----------
       - name: Upload artifacts
         if: always()
         uses: actions/upload-artifact@v4
@@ -56,3 +96,4 @@ jobs:
             build/**/*.dylib
             build/**/*.so
             build/**/${{ matrix.config }}/**
+            build/**/compile_commands.json

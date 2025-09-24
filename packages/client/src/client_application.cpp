@@ -117,10 +117,9 @@ void ClientApplication::render()
 
     renderUsersWindow(usersMap_);
 
-
     if (ImGui::BeginMainMenuBar())
     {
-        ImGui::Image(reinterpret_cast<ImTextureID>(logoTexture_), ImVec2(27,27));
+        ImGui::Image(reinterpret_cast<ImTextureID>(logoTexture_), ImVec2(40,40));
     }
     ImGui::EndMainMenuBar();
 

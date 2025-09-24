@@ -2,6 +2,10 @@
 
 Open source cross-platform chatting application. 
 
+## Build status
+
+![Build](https://github.com/Sanmopre/cli_chat/actions/workflows/build.yml/badge.svg)
+
 ## Dependencies
 
 The application uses the following libraries:

@@ -15,11 +15,11 @@ option(BUILD_CLIENT "Build the client component" ON)
 option(BUILD_SERVER "Build the server component" ON)
 
 # Client properties
-set(CLIENT_TARGET_NAME cli_chat)
+set(CLIENT_TARGET_NAME cli_chat CACHE STRING "Client target name")
 set(CLIENT_DESCRIPTION "This is a cli chatting application that connects to a server.")
 
 # Server properties
-set(SERVER_TARGET_NAME server)
+set(SERVER_TARGET_NAME server CACHE STRING "Server target name")
 set(SERVER_DESCRIPTION "This is the server for the cli_chat.")
 
 # Configuration file with constant cmake variables

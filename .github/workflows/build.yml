@@ -84,6 +84,24 @@ jobs:
         shell: msys2 {0}
         run: cmake --build build -- -j 2
 
+      # ---------- Export target names from CMake cache ----------
+      - name: Export target names (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          CLIENT=$(cmake -LA -N build | awk -F= '/^CLIENT_TARGET_NAME:STRING=/{print $2}')
+          SERVER=$(cmake -LA -N build | awk -F= '/^SERVER_TARGET_NAME:STRING=/{print $2}')
+          echo "CLIENT_TARGET_NAME=$CLIENT" >> $GITHUB_ENV
+          echo "SERVER_TARGET_NAME=$SERVER" >> $GITHUB_ENV
+
+      - name: Export target names (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: |
+          CLIENT=$(cmake -LA -N build | awk -F= '/^CLIENT_TARGET_NAME:STRING=/{print $2}')
+          SERVER=$(cmake -LA -N build | awk -F= '/^SERVER_TARGET_NAME:STRING=/{print $2}')
+          echo "CLIENT_TARGET_NAME=$CLIENT" >> $GITHUB_ENV
+          echo "SERVER_TARGET_NAME=$SERVER" >> $GITHUB_ENV
+
       # ---------- Artifacts (all OS) ----------
       - name: Upload artifacts
         if: always()
@@ -91,6 +109,8 @@ jobs:
         with:
           name: ${{ runner.os }}-${{ matrix.config }}
           path: |
+            build/**/${{ env.CLIENT_TARGET_NAME }}*
+            build/**/${{ env.SERVER_TARGET_NAME }}*
             build/**/*.exe
             build/**/*.dll
             build/**/*.dylib

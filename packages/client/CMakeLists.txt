@@ -57,5 +57,5 @@ target_link_libraries(${CLIENT_TARGET_NAME}
 )
 
 if (WIN32)
-    target_link_libraries(${CLIENT_TARGET_NAME} PRIVATE ws2_32)
+    target_link_libraries(${CLIENT_TARGET_NAME} PRIVATE ws2_32 mswsock)
 endif()

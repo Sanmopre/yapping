@@ -36,5 +36,5 @@ add_executable(${SERVER_TARGET_NAME}
 target_compile_definitions(${SERVER_TARGET_NAME} PRIVATE ASIO_STANDALONE)
 
 if (WIN32)
-    target_link_libraries(${SERVER_TARGET_NAME} PRIVATE ws2_32)
+    target_link_libraries(${SERVER_TARGET_NAME} PRIVATE ws2_32 mswsock)
 endif()

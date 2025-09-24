@@ -73,9 +73,13 @@ struct UserStatus
         content[USERNAME_KEY] = username;
         content[TIMESTAMP_KEY] = timestamp;
         content[USER_STATUS_KEY] = status;
-        content[USER_COLOR_KEY][COLOR_RED_KEY] = color.red;
-        content[USER_COLOR_KEY][COLOR_BLUE_KEY]= color.blue;
-        content[USER_COLOR_KEY][COLOR_GREEN_KEY]= color.green;
+
+        nlohmann::json colorKey;
+        colorKey[COLOR_RED_KEY] = color.red;
+        colorKey[COLOR_BLUE_KEY]= color.blue;
+        colorKey[COLOR_GREEN_KEY]= color.green;
+
+        content[USER_COLOR_KEY] = colorKey;
 
         data[PACKET_CONTENT_KEY] = content;
 

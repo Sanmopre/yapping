@@ -121,12 +121,13 @@ bool ClientApplication::initialize()
 
     // Load chat background texture
     logger_->info("Loading chat background texture");
-
     const auto background = gunzipInMemory(background_bmp_gz, background_bmp_gz_len);
-
     SDL_Surface* chatBackgroundSurface = SDL_LoadBMP_RW(SDL_RWFromConstMem(background.data(), background.size()), 0);
     chatBackground_ = SDL_CreateTextureFromSurface(renderer_, chatBackgroundSurface);
     SDL_FreeSurface(chatBackgroundSurface);
+
+    // set style
+    setStyle(ImGui::GetStyle());
 
     return true;
 }

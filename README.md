@@ -15,6 +15,7 @@ The application uses the following libraries:
 - [nlohmann-json](https://github.com/nlohmann/json)
 - [SDL2](https://www.libsdl.org/)
 - [spdlog](https://github.com/gabime/spdlog)
+- [zlib](https://github.com/madler/zlib)
 
 ## Build from source
 First add all the necessary submodules with

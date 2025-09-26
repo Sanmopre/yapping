@@ -10,6 +10,7 @@
 // hex_dumps
 #include "logo.h"
 #include "background.h"
+#include "send_button.h"
 #include "liberation_mono_regular.h"
 
 // cmake_constants
@@ -126,6 +127,13 @@ bool ClientApplication::initialize()
     chatBackground_ = SDL_CreateTextureFromSurface(renderer_, chatBackgroundSurface);
     SDL_FreeSurface(chatBackgroundSurface);
 
+    // Load send button texture
+    logger_->info("Loading send button texture");
+    const auto sendButtonData = gunzipInMemory(send_button_bmp_gz, send_button_bmp_gz_len);
+    SDL_Surface* sendButtonSurface = SDL_LoadBMP_RW(SDL_RWFromConstMem(sendButtonData.data(), sendButtonData.size()), 0);
+    sendButton_ = SDL_CreateTextureFromSurface(renderer_, sendButtonSurface);
+    SDL_FreeSurface(sendButtonSurface);
+
     // set style
     setStyle(ImGui::GetStyle());
 
@@ -144,7 +152,7 @@ void ClientApplication::render()
 
     ImGuiViewport* vp = ImGui::GetMainViewport();
     ImDrawList* bg = ImGui::GetBackgroundDrawList(vp);
-    bg->AddImage((ImTextureID)chatBackground_,
+    bg->AddImage(reinterpret_cast<ImTextureID>(chatBackground_),
                  vp->Pos,
                  ImVec2(vp->Pos.x + vp->Size.x, vp->Pos.y + vp->Size.y),
                  ImVec2(0,0), ImVec2(1,1), IM_COL32(255,255,255,255));
@@ -173,7 +181,9 @@ void ClientApplication::render()
             messageBuff[0] = '\0';
         }
         ImGui::SameLine();
-        if (ImGui::Button("Send"))
+
+        ImVec2 size(20, 20);
+        if (ImGui::ImageButton("send_button", reinterpret_cast<ImTextureID>(sendButton_), size))
         {
             client::messages::NewMessage msg;
             msg.message = messageBuff;

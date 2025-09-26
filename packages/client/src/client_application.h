@@ -34,6 +34,7 @@ class ClientApplication
     SDL_Renderer *renderer_;
     SDL_Texture* logoTexture_;
     SDL_Texture* chatBackground_;
+    SDL_Texture* sendButton_;
 
   private:
     // Data containers

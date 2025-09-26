@@ -24,8 +24,8 @@ set(SERVER_DESCRIPTION "This is the server for the cli_chat.")
 
 # Configuration file with constant cmake variables
 configure_file(
-    "${PROJECT_SOURCE_DIR}/packages/common/src/cmake_constants.h.in"
-    "${PROJECT_BINARY_DIR}/packages/common/src/cmake_constants.h"
+        "${PROJECT_SOURCE_DIR}/packages/common/src/cmake_constants.h.in"
+        "${PROJECT_BINARY_DIR}/packages/common/src/cmake_constants.h"
 )
 
 if(BUILD_CLIENT)
@@ -33,6 +33,7 @@ if(BUILD_CLIENT)
     set(SDL_SHARED OFF CACHE BOOL "" FORCE)
     set(SDL_STATIC ON  CACHE BOOL "" FORCE)
     add_subdirectory(submodules/sdl)
+    add_subdirectory(submodules/zlib)
 
     add_subdirectory(packages/client)
 endif ()

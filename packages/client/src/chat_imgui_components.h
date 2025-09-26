@@ -7,7 +7,7 @@
 #include "imgui_internal.h"
 
 
-constexpr auto METADATA_TEXT_COLOR = IM_COL32(120, 120, 120, 255);
+constexpr auto METADATA_TEXT_COLOR = IM_COL32(120, 120, 120, 170);
 
 
 // Pass an optional small_font (e.g., 12–13px). If null, it uses current font.

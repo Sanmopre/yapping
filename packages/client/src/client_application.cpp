@@ -1,5 +1,6 @@
 #include "client_application.h"
 #include "chat_imgui_components.h"
+#include "compression_utils.h"
 
 // imgui
 #include "imgui.h"
@@ -8,6 +9,8 @@
 
 // hex_dumps
 #include "logo.h"
+#include "background.h"
+#include "liberation_mono_regular.h"
 
 // cmake_constants
 #include "cmake_constants.h"
@@ -95,16 +98,35 @@ bool ClientApplication::initialize()
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
+    logger_->info("Loading liberation_mono_regular_ttf font");
+    ImFontConfig font_cfg;
+    font_cfg.FontDataOwnedByAtlas = false;
+
+    std::ignore = ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
+        (void*)liberation_mono_regular_ttf,
+        static_cast<int>(liberation_mono_regular_ttf_len),
+        15.0f,
+        &font_cfg,
+        ImGui::GetIO().Fonts->GetGlyphRangesDefault()
+    );
     // Setup Platform/Renderer backends
     ImGui_ImplSDL2_InitForSDLRenderer(window_, renderer_);
     ImGui_ImplSDLRenderer2_Init(renderer_);
 
-
     // Load logo texture
-    SDL_RWops* rw = SDL_RWFromConstMem(logo_bmp, logo_bmp_len);
-    SDL_Surface* surface = SDL_LoadBMP_RW(rw, 0);
-    logoTexture_ = SDL_CreateTextureFromSurface(renderer_, surface);
-    SDL_FreeSurface(surface);
+    logger_->info("Loading logo texture");
+    SDL_Surface* logoSurface = SDL_LoadBMP_RW(SDL_RWFromConstMem(logo_bmp, logo_bmp_len), 0);
+    logoTexture_ = SDL_CreateTextureFromSurface(renderer_, logoSurface);
+    SDL_FreeSurface(logoSurface);
+
+    // Load chat background texture
+    logger_->info("Loading chat background texture");
+
+    const auto background = gunzipInMemory(background_bmp_gz, background_bmp_gz_len);
+
+    SDL_Surface* chatBackgroundSurface = SDL_LoadBMP_RW(SDL_RWFromConstMem(background.data(), background.size()), 0);
+    chatBackground_ = SDL_CreateTextureFromSurface(renderer_, chatBackgroundSurface);
+    SDL_FreeSurface(chatBackgroundSurface);
 
     return true;
 }
@@ -118,6 +140,16 @@ void ClientApplication::render()
 {
     // Pre render functions needed for rendering
     preRender();
+
+    ImGuiViewport* vp = ImGui::GetMainViewport();
+    ImDrawList* bg = ImGui::GetBackgroundDrawList(vp);
+    bg->AddImage((ImTextureID)chatBackground_,
+                 vp->Pos,
+                 ImVec2(vp->Pos.x + vp->Size.x, vp->Pos.y + vp->Size.y),
+                 ImVec2(0,0), ImVec2(1,1), IM_COL32(255,255,255,255));
+
+
+
 
     renderUsersWindow(usersMap_);
 
@@ -190,15 +222,14 @@ void ClientApplication::preRender()
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
-    // If you want the dockspace to take the entire viewport:
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking |
+        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
+    | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
     const ImGuiViewport *viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
     ImGui::SetNextWindowSize(viewport->WorkSize);
     ImGui::SetNextWindowViewport(viewport->ID);
-    window_flags |=
-        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-    window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);

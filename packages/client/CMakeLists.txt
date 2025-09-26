@@ -22,10 +22,12 @@ set(CLIENT_INCLUDE_DIRS
         ${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/CLI11/include
         ${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/spdlog/include
         ${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/imgui/
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/zlib/
         ${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/imgui/backends
         ${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/sdl/include
         ${PROJECT_BINARY_DIR}/packages/common/src
         ../common/hex_dumps/images
+        ../common/hex_dumps/fonts
         ../common/src/
 )
 
@@ -38,6 +40,7 @@ set(CLIENT_SOURCES
         src/chat_imgui_components.h
         src/client_application.cpp
         src/client_application.h
+        src/compression_utils.h
 )
 
 include_directories(
@@ -54,6 +57,7 @@ target_compile_definitions(${CLIENT_TARGET_NAME} PRIVATE ASIO_STANDALONE SDL_MAI
 target_link_libraries(${CLIENT_TARGET_NAME}
         PRIVATE
         SDL2::SDL2-static
+        zlibstatic
 )
 
 if (WIN32)

@@ -5,6 +5,8 @@
 // sdl2
 #include "SDL.h"
 
+constexpr u16 WINDOW_WIDTH = 1280;
+constexpr u16 WINDOW_HEIGHT = 720;
 
 struct ApplicationTextures
 {

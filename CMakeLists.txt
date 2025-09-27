@@ -6,11 +6,13 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Windows build
 if (MSVC)
     add_compile_options(/utf-8 /permissive- /Zc:__cplusplus)
     add_definitions(-DNOMINMAX -DWIN32_LEAN_AND_MEAN)
 endif()
 
+# Build options
 option(BUILD_CLIENT "Build the client component" ON)
 option(BUILD_SERVER "Build the server component" ON)
 
@@ -34,7 +36,6 @@ if(BUILD_CLIENT)
     set(SDL_STATIC ON  CACHE BOOL "" FORCE)
     add_subdirectory(submodules/sdl)
     add_subdirectory(submodules/zlib)
-
     add_subdirectory(packages/client)
 endif ()
 

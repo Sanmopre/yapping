@@ -1,7 +1,7 @@
 set(SQLITE_SOURCES
-    sqlite3/sqlite3.c
-    sqlite3/sqlite3.h
-    sqlite3/sqlite3ext.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/sqlite3/sqlite3.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/sqlite3/sqlite3.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/sqlite3/sqlite3ext.h
 )
 
 set(SERVER_INCLUDE_DIRS
@@ -9,19 +9,19 @@ set(SERVER_INCLUDE_DIRS
         ${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/nlohmann/
         ${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/CLI11/include
         ${CMAKE_CURRENT_SOURCE_DIR}/../../submodules/spdlog/include
-        "${PROJECT_BINARY_DIR}/packages/common/src"
-        "${PROJECT_BINARY_DIR}/packages/server/sqlite3"
-        ../common/src/
+        ${PROJECT_BINARY_DIR}/packages/common/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/packages/server/sqlite3
+        ${CMAKE_CURRENT_SOURCE_DIR}/../common/src/
 )
 
 set(SERVER_SOURCES
         ${SQLITE_SOURCES}
-        src/main.cpp
-        src/tcp_server.h
-        ../common/src/global.h
-        ../common/src/messages.h
-        src/db_manager.cpp
-        src/db_manager.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/tcp_server.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../common/src/global.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/../common/src/messages.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/db_manager.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/db_manager.h
 )
 
 include_directories(

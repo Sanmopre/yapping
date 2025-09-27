@@ -31,7 +31,15 @@ ClientApplication::ClientApplication(const std::string &username, const std::str
 
     tcpClient_->on_message([&](const server::messages::ServerMessage &&msg) {
         std::visit(
-            overloaded{[&](const server::messages::NewMessageReceived &value) { messages_.emplace_back(value); },
+            overloaded{[&](const server::messages::NewMessageReceived &value)
+            {
+                if (const auto it = usersMap_.find(value.username); it == usersMap_.end())
+                {
+                    logger_->error("User {} not found in users map, can not display message with color", value.username);
+                }
+
+                messages_.emplace_back(value);
+            },
                        [&](const server::messages::UserStatus &value)
                        {
                            usersMap_[value.username].status = value.status;
@@ -75,7 +83,7 @@ bool ClientApplication::initialize()
     // Create window with SDL_Renderer graphics context
     constexpr auto window_flags = static_cast<SDL_WindowFlags>(SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
     window_ = SDL_CreateWindow(CLIENT_TARGET_NAME, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                               1280, 720, window_flags);
+                               WINDOW_WIDTH, WINDOW_HEIGHT, window_flags);
     if (window_ == nullptr)
     {
         logger_->error("Failed to create window - {}", SDL_GetError());
@@ -149,14 +157,13 @@ void ClientApplication::render()
                  ImVec2(vp->Pos.x + vp->Size.x, vp->Pos.y + vp->Size.y),
                  ImVec2(0,0), ImVec2(1,1), IM_COL32(255,255,255,255));
 
-
-
-
     renderUsersWindow(usersMap_);
 
     if (ImGui::BeginMainMenuBar())
     {
         ImGui::Image(reinterpret_cast<ImTextureID>(textures_.logo), ImVec2(40,40));
+        ImGui::SameLine();
+        ImGui::Text(PROJECT_VERSION);
     }
     ImGui::EndMainMenuBar();
 
@@ -197,13 +204,14 @@ void ClientApplication::render()
             }
             else
             {
-                logger_->error("User {} not found in users map, can not display message with color", message.username);
                 renderServerMessage(message, username_, server::messages::UserColor{100, 100, 100});
             }
         }
 
         if (isAtBottom)
-        {            ImGui::SetScrollHereY(0.0f);}
+        {
+            ImGui::SetScrollHereY(0.0f);
+        }
 
     }
     ImGui::End();
@@ -232,7 +240,7 @@ void ClientApplication::preRender()
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking |
+    ImGuiWindowFlags window_flags =  ImGuiWindowFlags_NoDocking |
         ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
     | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoBackground;
     const ImGuiViewport *viewport = ImGui::GetMainViewport();

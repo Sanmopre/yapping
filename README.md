@@ -1,4 +1,4 @@
-# cli_chat
+# <img src="documentation/images/logo.png" alt="logo" width="50" style="vertical-align: middle;"/> CLI CHAT
 
 Open source cross-platform chatting application. 
 
@@ -28,5 +28,3 @@ After that, just
 cmake -S . -B build -DBUILD_CLIENT:BOOL=ON -DBUILD_SERVER:BOOL=ON
 cmake --build build
 ```
-
-![logo](documentation/images/logo.png)

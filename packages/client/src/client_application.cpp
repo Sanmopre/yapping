@@ -116,23 +116,15 @@ bool ClientApplication::initialize()
 
     // Load logo texture
     logger_->info("Loading logo texture");
-    SDL_Surface* logoSurface = SDL_LoadBMP_RW(SDL_RWFromConstMem(logo_bmp, logo_bmp_len), 0);
-    logoTexture_ = SDL_CreateTextureFromSurface(renderer_, logoSurface);
-    SDL_FreeSurface(logoSurface);
+    textures_.logo = getTexture(logo_bmp_gz, logo_bmp_gz_len);
 
     // Load chat background texture
     logger_->info("Loading chat background texture");
-    const auto background = gunzipInMemory(background_bmp_gz, background_bmp_gz_len);
-    SDL_Surface* chatBackgroundSurface = SDL_LoadBMP_RW(SDL_RWFromConstMem(background.data(), background.size()), 0);
-    chatBackground_ = SDL_CreateTextureFromSurface(renderer_, chatBackgroundSurface);
-    SDL_FreeSurface(chatBackgroundSurface);
+    textures_.chatBackground = getTexture(background_bmp_gz, background_bmp_gz_len);
 
     // Load send button texture
     logger_->info("Loading send button texture");
-    const auto sendButtonData = gunzipInMemory(send_button_bmp_gz, send_button_bmp_gz_len);
-    SDL_Surface* sendButtonSurface = SDL_LoadBMP_RW(SDL_RWFromConstMem(sendButtonData.data(), sendButtonData.size()), 0);
-    sendButton_ = SDL_CreateTextureFromSurface(renderer_, sendButtonSurface);
-    SDL_FreeSurface(sendButtonSurface);
+    textures_.sendButton = getTexture(send_button_bmp_gz, send_button_bmp_gz_len);
 
     // set style
     setStyle(ImGui::GetStyle());
@@ -152,7 +144,7 @@ void ClientApplication::render()
 
     ImGuiViewport* vp = ImGui::GetMainViewport();
     ImDrawList* bg = ImGui::GetBackgroundDrawList(vp);
-    bg->AddImage(reinterpret_cast<ImTextureID>(chatBackground_),
+    bg->AddImage(reinterpret_cast<ImTextureID>(textures_.chatBackground),
                  vp->Pos,
                  ImVec2(vp->Pos.x + vp->Size.x, vp->Pos.y + vp->Size.y),
                  ImVec2(0,0), ImVec2(1,1), IM_COL32(255,255,255,255));
@@ -164,7 +156,7 @@ void ClientApplication::render()
 
     if (ImGui::BeginMainMenuBar())
     {
-        ImGui::Image(reinterpret_cast<ImTextureID>(logoTexture_), ImVec2(40,40));
+        ImGui::Image(reinterpret_cast<ImTextureID>(textures_.logo), ImVec2(40,40));
     }
     ImGui::EndMainMenuBar();
 
@@ -183,7 +175,7 @@ void ClientApplication::render()
         ImGui::SameLine();
 
         ImVec2 size(20, 20);
-        if (ImGui::ImageButton("send_button", reinterpret_cast<ImTextureID>(sendButton_), size))
+        if (ImGui::ImageButton("send_button", reinterpret_cast<ImTextureID>(textures_.sendButton), size))
         {
             client::messages::NewMessage msg;
             msg.message = messageBuff;
@@ -219,6 +211,13 @@ void ClientApplication::render()
 
     // Post rendering functions needed for frame clean up
     postRender();
+}
+
+SDL_Texture *
+ClientApplication::getTexture(const unsigned char *compressedSource,
+                              size_t compressedLenght) const {
+    const auto uncompressedData = gunzipInMemory(compressedSource, compressedLenght);
+    return SDL_CreateTextureFromSurface(renderer_, SDL_LoadBMP_RW(SDL_RWFromConstMem(uncompressedData.data(), uncompressedData.size()), 1));
 }
 
 SDL_Window *ClientApplication::getWindow() const noexcept

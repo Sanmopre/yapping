@@ -6,6 +6,13 @@
 #include "SDL.h"
 
 
+struct ApplicationTextures
+{
+  SDL_Texture* logo;
+  SDL_Texture* chatBackground;
+  SDL_Texture* sendButton;
+};
+
 class ClientApplication
 {
   public:
@@ -24,6 +31,9 @@ class ClientApplication
     void postRender();
     void render();
 
+private:
+  [[nodiscard]] SDL_Texture* getTexture(const unsigned char* compressedSource, size_t compressedLenght) const;
+
   private:
     spdlog::logger *logger_;
     std::unique_ptr<SimpleTcpClient> tcpClient_;
@@ -32,9 +42,7 @@ class ClientApplication
     // sdl
     SDL_Window *window_;
     SDL_Renderer *renderer_;
-    SDL_Texture* logoTexture_;
-    SDL_Texture* chatBackground_;
-    SDL_Texture* sendButton_;
+    ApplicationTextures textures_;
 
   private:
     // Data containers

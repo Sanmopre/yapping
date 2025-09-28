@@ -161,7 +161,7 @@ void ClientApplication::render()
 
     if (ImGui::BeginMainMenuBar())
     {
-        ImGui::Image(reinterpret_cast<ImTextureID>(textures_.logo), ImVec2(40,40));
+        ImGui::Image(reinterpret_cast<ImTextureID>(textures_.logo), ImVec2(32,32));
         ImGui::SameLine();
         ImGui::Text(PROJECT_VERSION);
     }

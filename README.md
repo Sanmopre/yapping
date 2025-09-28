@@ -1,4 +1,4 @@
-# <img src="documentation/images/logo.png" alt="logo" width="50" style="vertical-align: middle;"/> CLI CHAT
+# <img src="docs/images/logo.png" alt="logo" width="50" style="vertical-align: middle;"/> CLI CHAT
 
 Open source cross-platform chatting application. 
 

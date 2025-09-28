@@ -1,6 +1,6 @@
-# <img src="docs/images/logo.png" alt="logo" width="50" style="vertical-align: middle;"/> YAPPING
+# <img src="docs/images/logo.png" alt="logo" width="100" style="vertical-align: middle;"/> YAPPING
 
-Open source cross-platform chatting application. 
+Open source cross-platform chatting application. For more information check the [yapping website](https://www.santiagomoliner.com/yapping/). 
 
 ## Build status
 
@@ -23,7 +23,7 @@ First add all the necessary submodules with
 git submodule update --init --recursive
 ```
 
-After that, just
+After that, just run the following cmake commands
 ```
 cmake -S . -B build -DBUILD_CLIENT:BOOL=ON -DBUILD_SERVER:BOOL=ON
 cmake --build build

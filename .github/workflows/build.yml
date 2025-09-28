@@ -36,6 +36,7 @@ jobs:
           -G Ninja
           -DCMAKE_BUILD_TYPE=${{ matrix.config }}
           -DCMAKE_CXX_STANDARD=17
+          -DBUILD_SHARED_LIBS=OFF
       - name: Build (Linux)
         if: runner.os == 'Linux'
         run: cmake --build build -- -k 0 -j 2
@@ -51,38 +52,37 @@ jobs:
           -G Ninja
           -DCMAKE_BUILD_TYPE=${{ matrix.config }}
           -DCMAKE_CXX_STANDARD=17
+          -DBUILD_SHARED_LIBS=OFF
       - name: Build (macOS)
         if: runner.os == 'macOS'
         run: cmake --build build -- -k 0 -j 2
 
-      # ---------- Windows (MSYS2 / MinGW-w64 like CLion) ----------
-      - name: Setup MSYS2 with MinGW-w64 (Windows)
+      # ---------- Windows (MSVC + Ninja, fully static /MT) ----------
+      # This replaces the old MSYS2/MinGW section
+      - name: MSVC Dev Cmd (x64)
         if: runner.os == 'Windows'
-        uses: msys2/setup-msys2@v2
+        uses: ilammy/msvc-dev-cmd@v1
         with:
-          update: true
-          msystem: MINGW64
-          install: >-
-            mingw-w64-x86_64-gcc
-            mingw-w64-x86_64-cmake
-            mingw-w64-x86_64-ninja
+          arch: x64
 
-      - name: Configure (Windows MinGW)
+      - name: Install Ninja (Windows)
         if: runner.os == 'Windows'
-        shell: msys2 {0}
+        run: choco install ninja -y
+
+      - name: Configure (Windows MSVC static)
+        if: runner.os == 'Windows'
         run: >
           cmake -S . -B build
           -G Ninja
           -DCMAKE_BUILD_TYPE=${{ matrix.config }}
-          -DCMAKE_C_STANDARD=11
-          -DCMAKE_CXX_STANDARD=17
-          -DCMAKE_C_COMPILER=gcc
-          -DCMAKE_CXX_COMPILER=g++
+          -DCMAKE_CXX_STANDARD=20
+          -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded$<$<CONFIG:Debug>:Debug>
+          -DSDL_SHARED=OFF -DSDL_STATIC=ON
+          -DBUILD_SHARED_LIBS=OFF
 
-      - name: Build (Windows MinGW)
+      - name: Build (Windows MSVC static)
         if: runner.os == 'Windows'
-        shell: msys2 {0}
-        run: cmake --build build -- -j 2
+        run: cmake --build build --config ${{ matrix.config }} -- -j 2
 
       # ---------- Export target names from CMake cache ----------
       - name: Export target names (Linux/macOS)
@@ -95,12 +95,29 @@ jobs:
 
       - name: Export target names (Windows)
         if: runner.os == 'Windows'
-        shell: msys2 {0}
+        shell: pwsh
         run: |
-          CLIENT=$(cmake -LA -N build | awk -F= '/^CLIENT_TARGET_NAME:STRING=/{print $2}')
-          SERVER=$(cmake -LA -N build | awk -F= '/^SERVER_TARGET_NAME:STRING=/{print $2}')
-          echo "CLIENT_TARGET_NAME=$CLIENT" >> $GITHUB_ENV
-          echo "SERVER_TARGET_NAME=$SERVER" >> $GITHUB_ENV
+          $cache = cmake -LA -N build
+          $client = ($cache | Select-String '^CLIENT_TARGET_NAME:STRING=(.*)$').Matches[0].Groups[1].Value
+          $server = ($cache | Select-String '^SERVER_TARGET_NAME:STRING=(.*)$').Matches[0].Groups[1].Value
+          echo "CLIENT_TARGET_NAME=$client" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "SERVER_TARGET_NAME=$server" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      # ---------- (Windows) Verify fully static CRT ----------
+      - name: Verify no MSVC runtime DLLs (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $exe = Get-ChildItem -Path build -Recurse -Filter "$($env:CLIENT_TARGET_NAME).exe" | Select-Object -First 1
+          if (-not $exe) { throw "Client exe not found" }
+          & dumpbin /DEPENDENTS $exe.FullName | Tee-Object deps.txt | Out-Null
+          $deps = Get-Content deps.txt
+          if ($deps -match "VCRUNTIME|MSVCP|UCRTBASE") {
+            Write-Host $deps
+            throw "Found dynamic MSVC runtime dependency; expected fully static (/MT)."
+          } else {
+            Write-Host "OK: no MSVC runtime DLLs required."
+          }
 
       # ---------- Artifacts (all OS) ----------
       - name: Upload artifacts
@@ -109,11 +126,9 @@ jobs:
         with:
           name: ${{ runner.os }}-${{ matrix.config }}
           path: |
-            build/**/${{ env.CLIENT_TARGET_NAME }}*
-            build/**/${{ env.SERVER_TARGET_NAME }}*
-            build/**/*.exe
-            build/**/*.dll
-            build/**/*.dylib
-            build/**/*.so
+            build/**/${{ env.CLIENT_TARGET_NAME }}.exe
+            build/**/${{ env.SERVER_TARGET_NAME }}.exe
+            build/**/${{ env.CLIENT_TARGET_NAME }}
+            build/**/${{ env.SERVER_TARGET_NAME }}
             build/**/${{ matrix.config }}/**
             build/**/compile_commands.json

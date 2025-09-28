@@ -1,4 +1,8 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.15)
+
+if (POLICY CMP0091)
+    cmake_policy(SET CMP0091 NEW)
+endif()
 
 project(cli_chat VERSION 1.0.0)
 
@@ -6,9 +10,11 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Windows build
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
+# (optional but recommended with MSVC)
 if (MSVC)
-    add_compile_options(/utf-8 /permissive- /Zc:__cplusplus)
+    add_compile_options(/utf-8 /permissive- /Zc:__cplusplus /EHsc)
     add_definitions(-DNOMINMAX -DWIN32_LEAN_AND_MEAN)
 endif()
 

@@ -16,7 +16,7 @@
 class SimpleTcpClient
 {
   public:
-    SimpleTcpClient() : socket_(io_)
+    explicit SimpleTcpClient(spdlog::logger* logger) : logger_(logger), socket_(io_)
     {
     }
 
@@ -25,7 +25,6 @@ class SimpleTcpClient
         stop();
     }
 
-    // Connect to host:port (IPv4 or hostname). Starts internal IO thread.
     void connect(const std::string &host, u16 port)
     {
         if (running_.exchange(true))
@@ -39,7 +38,6 @@ class SimpleTcpClient
         });
     }
 
-    // Close the connection and stop IO.
     void stop()
     {
         if (!running_.exchange(false))
@@ -47,7 +45,7 @@ class SimpleTcpClient
 
         asio::post(io_, [this] {
             std::error_code ec;
-            socket_.close(ec);
+            std::ignore = socket_.close(ec);
             resolver_.cancel();
         });
 
@@ -59,7 +57,6 @@ class SimpleTcpClient
         write_queue_.clear();
     }
 
-    // Send a line of text to the server. Appends '\n' if not present.
     void write(client::messages::ClientMessage clientMsg)
     {
         std::string msg = std::visit([](auto const &m) { return m.toString(); }, clientMsg);
@@ -67,11 +64,15 @@ class SimpleTcpClient
         if (msg.empty() || msg.back() != '\n')
             msg.push_back('\n');
         asio::post(io_, [this, m = std::move(msg)]() mutable {
-            if (!connected_ || !socket_.is_open())
+            if (!connected_ || !socket_.is_open()) {
                 return;
+            }
+
             write_queue_.push_back(std::move(m));
-            if (!writing_)
+            if (!writing_) {
                 do_write_next();
+            }
+
         });
     }
 
@@ -95,13 +96,11 @@ class SimpleTcpClient
     void do_connect()
     {
         resolver_ = asio::ip::tcp::resolver(io_);
-
-        // Resolve host:port (IPv4 preferred)
         resolver_.async_resolve(
-            host_, std::to_string(port_), [this](std::error_code ec, asio::ip::tcp::resolver::results_type results) {
+            host_, std::to_string(port_), [this](const std::error_code& ec, const asio::ip::tcp::resolver::results_type& results) {
                 if (ec)
                 {
-                    std::cerr << "Resolve error: " << ec.message() << "\n";
+                    logger_->error( "Resolve error: {}" , ec.message());
                     handle_disconnect(ec);
                     return;
                 }
@@ -111,8 +110,12 @@ class SimpleTcpClient
                 for (auto &r : results)
                 {
                     if (r.endpoint().address().is_v4())
+                    {
                         v4.push_back(r.endpoint());
+                    }
+
                 }
+
                 auto begin = v4.empty() ? results.begin() : asio::ip::tcp::resolver::results_type::iterator();
                 if (!v4.empty())
                 {
@@ -168,7 +171,7 @@ class SimpleTcpClient
                 const nlohmann::json data = nlohmann::json::parse(line, nullptr, false);
                 if (data.is_discarded())
                 {
-                    std::cerr << "Invalid json for message : " << line << "\n";
+                    logger_->error("Invalid json for message: {}", line);
                 }
 
                 const auto &content = data[PACKET_CONTENT_KEY];
@@ -216,20 +219,22 @@ class SimpleTcpClient
         {
             if (ec != asio::error::operation_aborted)
             {
-                std::cerr << "Disconnected: " << ec.message() << "\n";
+                logger_->error("Disconnected: {}", ec.message());
             }
             std::error_code ignore;
-            socket_.close(ignore);
+            std::ignore = socket_.close(ignore);
             connected_ = false;
             writing_ = false;
             write_queue_.clear();
             if (on_disconnect_)
-                on_disconnect_();
+            {on_disconnect_();}
         }
         // No auto-reconnect (keep it simple). Call connect() again if desired.
     }
 
-  private:
+private:
+    spdlog::logger* logger_;
+
     // IO
     asio::io_context io_;
     asio::ip::tcp::socket socket_;

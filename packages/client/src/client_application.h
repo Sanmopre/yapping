@@ -32,6 +32,7 @@ class ClientApplication
     void preRender();
     void postRender();
     void render();
+    void sendMessageContent();
 
 private:
   [[nodiscard]] SDL_Texture* getTexture(const unsigned char* compressedSource, size_t compressedLenght) const;
@@ -51,4 +52,5 @@ private:
     const std::string username_;
     std::map<std::string, UserData> usersMap_;
     std::vector<server::messages::NewMessageReceived> messages_;
+    char messageBuff_[MAX_MESSAGE_LENGTH] = "";
 };

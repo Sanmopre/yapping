@@ -18,7 +18,7 @@
 
 ClientApplication::ClientApplication(const std::string &username, const std::string &host, u16 port,
                                      spdlog::logger *logger)
-    : logger_(logger), tcpClient_(std::make_unique<SimpleTcpClient>()), username_(username)
+    : logger_(logger), tcpClient_(std::make_unique<SimpleTcpClient>(logger_)), username_(username)
 {
     tcpClient_->on_connect([&] {
         client::messages::InitialConnection msg;
@@ -169,25 +169,17 @@ void ClientApplication::render()
 
     if (ImGui::Begin("Input"))
     {
-        static char messageBuff[MAX_MESSAGE_LENGTH] = "";
-
         // Or if you want it to send on Enter:
-        if (ImGui::InputText("##msg", messageBuff, IM_ARRAYSIZE(messageBuff), ImGuiInputTextFlags_EnterReturnsTrue))
+        if (ImGui::InputText("##msg", messageBuff_, IM_ARRAYSIZE(messageBuff_), ImGuiInputTextFlags_EnterReturnsTrue))
         {
-            client::messages::NewMessage msg;
-            msg.message = messageBuff;
-            tcpClient_->write(msg);
-            messageBuff[0] = '\0';
+            sendMessageContent();
         }
         ImGui::SameLine();
 
         ImVec2 size(20, 20);
         if (ImGui::ImageButton("send_button", reinterpret_cast<ImTextureID>(textures_.sendButton), size))
         {
-            client::messages::NewMessage msg;
-            msg.message = messageBuff;
-            tcpClient_->write(msg);
-            messageBuff[0] = '\0';
+            sendMessageContent();
         }
     }
     ImGui::End();
@@ -219,6 +211,17 @@ void ClientApplication::render()
 
     // Post rendering functions needed for frame clean up
     postRender();
+}
+
+void ClientApplication::sendMessageContent()
+{
+    if (const auto messageString = std::string(messageBuff_); !messageString.empty())
+    {
+        client::messages::NewMessage msg;
+        msg.message = messageString;
+        tcpClient_->write(msg);
+        messageBuff_[0] = '\0';
+    }
 }
 
 SDL_Texture *

@@ -4,7 +4,7 @@ if (POLICY CMP0091)
     cmake_policy(SET CMP0091 NEW)
 endif()
 
-project(cli_chat VERSION 0.1.0)
+project(yapping VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -22,12 +22,12 @@ option(BUILD_CLIENT "Build the client component" ON)
 option(BUILD_SERVER "Build the server component" ON)
 
 # Client properties
-set(CLIENT_TARGET_NAME cli_chat CACHE STRING "Client target name")
+set(CLIENT_TARGET_NAME yapping CACHE STRING "Client target name")
 set(CLIENT_DESCRIPTION "This is a cli chatting application that connects to a server.")
 
 # Server properties
-set(SERVER_TARGET_NAME server CACHE STRING "Server target name")
-set(SERVER_DESCRIPTION "This is the server for the cli_chat.")
+set(SERVER_TARGET_NAME yapping_server CACHE STRING "Server target name")
+set(SERVER_DESCRIPTION "This is the server for the application.")
 
 # Configuration file with constant cmake variables
 configure_file(

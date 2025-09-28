@@ -1,10 +1,10 @@
-# <img src="docs/images/logo.png" alt="logo" width="50" style="vertical-align: middle;"/> CLI CHAT
+# <img src="docs/images/logo.png" alt="logo" width="50" style="vertical-align: middle;"/> YAPPING
 
 Open source cross-platform chatting application. 
 
 ## Build status
 
-![Build](https://github.com/Sanmopre/cli_chat/actions/workflows/build.yml/badge.svg)
+![Build](https://github.com/Sanmopre/yapping/actions/workflows/build.yml/badge.svg)
 
 ## Dependencies
 

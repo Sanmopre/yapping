@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tcp_client.h"
+#include "data_manager.h"
 
 // sdl2
 #include "SDL.h"
@@ -17,40 +17,37 @@ struct ApplicationTextures
 
 class ClientApplication
 {
-  public:
-    ClientApplication(const std::string &username, const std::string &host, u16 port, spdlog::logger *logger);
-    ~ClientApplication();
+public:
+  ClientApplication(const DataManager& data, spdlog::logger *logger);
+  ~ClientApplication();
 
-  public:
-    [[nodiscard]] bool initialize();
-    void update();
+public:
+  [[nodiscard]] bool initialize();
+  void update();
 
-  public:
-    [[nodiscard]] SDL_Window *getWindow() const noexcept;
+public:
+  [[nodiscard]] SDL_Window *getWindow() const noexcept;
 
-  private:
-    void preRender();
-    void postRender();
-    void render();
-    void sendMessageContent();
+private:
+  void preRender();
+  void postRender();
+  void render();
+  void sendMessageContent();
 
 private:
   [[nodiscard]] SDL_Texture* getTexture(const unsigned char* compressedSource, size_t compressedLenght) const;
 
-  private:
-    spdlog::logger *logger_;
-    std::unique_ptr<TcpClient> tcpClient_;
+private:
+  const DataManager& data;
+  spdlog::logger *logger_;
 
-  private:
-    // sdl
-    SDL_Window *window_;
-    SDL_Renderer *renderer_;
-    ApplicationTextures textures_;
+private:
+  // sdl
+  SDL_Window *window_;
+  SDL_Renderer *renderer_;
+  ApplicationTextures textures_;
 
-  private:
-    // Data containers
-    const std::string username_;
-    std::map<std::string, UserData> usersMap_;
-    std::vector<server::messages::NewMessageReceived> messages_;
-    char messageBuff_[MAX_MESSAGE_LENGTH] = "";
+private:
+  // Data containers
+  char messageBuff_[MAX_MESSAGE_LENGTH] = "";
 };

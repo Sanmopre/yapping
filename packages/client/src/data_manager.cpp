@@ -11,6 +11,11 @@ DataManager::DataManager(const std::string &username, const std::string &host,
   tcpClient_->connect(host, port);
 }
 
+DataManager::~DataManager()
+{
+  tcpClient_->stop();
+}
+
 bool DataManager::sendMessage(const std::string &message) const noexcept
 {
   if (message.empty())
@@ -18,7 +23,8 @@ bool DataManager::sendMessage(const std::string &message) const noexcept
     return false;
   }
 
-  client::messages::NewMessage newMessage{message};
+  client::messages::NewMessage newMessage;
+  newMessage.message = message;
   tcpClient_->write(newMessage);
 
   return true;

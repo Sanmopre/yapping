@@ -16,43 +16,10 @@
 // cmake_constants
 #include "cmake_constants.h"
 
-ClientApplication::ClientApplication(const std::string &username, const std::string &host, u16 port,
-                                     spdlog::logger *logger)
-    : logger_(logger), tcpClient_(std::make_unique<TcpClient>(logger_)), username_(username)
+
+ClientApplication::ClientApplication(const DataManager &data,
+                                     spdlog::logger *logger) : data(data), logger_(logger)
 {
-    tcpClient_->on_connect([&] {
-        client::messages::InitialConnection msg;
-        msg.username = username_;
-        tcpClient_->write(msg);
-        logger_->info("Connected to server");
-    });
-
-    tcpClient_->on_disconnect([&] { logger_->info("Disconnected from server"); });
-
-    tcpClient_->on_message([&](const server::messages::ServerMessage &&msg) {
-        std::visit(
-            overloaded{[&](const server::messages::NewMessageReceived &value)
-            {
-                if (const auto it = usersMap_.find(value.username); it == usersMap_.end())
-                {
-                    logger_->error("User {} not found in users map, can not display message with color", value.username);
-                }
-
-                messages_.emplace_back(value);
-            },
-           [&](const server::messages::UserStatus &value)
-           {
-               usersMap_[value.username].status = value.status;
-               usersMap_[value.username].color = value.color;
-           },
-           [&](const server::messages::ServerResponse &value)
-           {
-              std::ignore = value;
-           }},
-            msg);
-    });
-
-    tcpClient_->connect(host, port);
 }
 
 ClientApplication::~ClientApplication()
@@ -65,9 +32,6 @@ ClientApplication::~ClientApplication()
     SDL_DestroyRenderer(renderer_);
     SDL_DestroyWindow(window_);
     SDL_Quit();
-
-    // stop server
-    tcpClient_->stop();
 }
 
 bool ClientApplication::initialize()
@@ -122,6 +86,7 @@ bool ClientApplication::initialize()
         &font_cfg,
         ImGui::GetIO().Fonts->GetGlyphRangesDefault()
     );
+
     // Setup Platform/Renderer backends
     ImGui_ImplSDL2_InitForSDLRenderer(window_, renderer_);
     ImGui_ImplSDLRenderer2_Init(renderer_);
@@ -161,7 +126,7 @@ void ClientApplication::render()
                  ImVec2(vp->Pos.x + vp->Size.x, vp->Pos.y + vp->Size.y),
                  ImVec2(0,0), ImVec2(1,1), IM_COL32(255,255,255,255));
 
-    renderUsersWindow(usersMap_);
+    renderUsersWindow(data.getUsers());
 
     if (ImGui::BeginMainMenuBar())
     {
@@ -192,15 +157,15 @@ void ClientApplication::render()
     {
         bool isAtBottom =  ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 1.0f;
 
-        for (const auto &message : messages_)
+        for (const auto &message : data.getMessages())
         {
-            if (const auto it = usersMap_.find(message.username); it != usersMap_.end())
+            if (const auto it = data.getUsers().find(message.username); it != data.getUsers().end())
             {
-                renderServerMessage(message, username_, usersMap_.at(message.username).color);
+                renderServerMessage(message, data.getUsername(), data.getUsers().at(message.username).color);
             }
             else
             {
-                renderServerMessage(message, username_, server::messages::UserColor{100, 100, 100});
+                renderServerMessage(message, data.getUsername(), server::messages::UserColor{100, 100, 100});
             }
         }
 
@@ -219,11 +184,8 @@ void ClientApplication::render()
 
 void ClientApplication::sendMessageContent()
 {
-    if (const auto messageString = std::string(messageBuff_); !messageString.empty())
+    if (const auto response = data.sendMessage(std::string(messageBuff_)); response)
     {
-        client::messages::NewMessage msg;
-        msg.message = messageString;
-        tcpClient_->write(msg);
         messageBuff_[0] = '\0';
     }
 }

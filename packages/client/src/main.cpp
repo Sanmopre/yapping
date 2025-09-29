@@ -60,7 +60,8 @@ int main(int argc, char **argv)
 
     logger->info("Starting {} version {}", CLIENT_TARGET_NAME, PROJECT_VERSION);
 
-    const auto clientApplication = std::make_unique<ClientApplication>(username, serverIp, serverPort, logger.get());
+    const auto dataManager = DataManager(username, serverIp, serverPort, logger.get());
+    const auto clientApplication = std::make_unique<ClientApplication>(dataManager, logger.get());
 
     if (!clientApplication->initialize())
     {

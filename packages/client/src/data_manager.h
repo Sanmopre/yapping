@@ -6,7 +6,7 @@ class DataManager
 {
 public:
   DataManager(const std::string &username, const std::string &host, u16 port, spdlog::logger *logger);
-  ~DataManager() = default;
+  ~DataManager();
 
 public:
   [[nodiscard]] bool sendMessage(const std::string& message) const noexcept;

@@ -39,7 +39,7 @@ private:
 
   private:
     spdlog::logger *logger_;
-    std::unique_ptr<SimpleTcpClient> tcpClient_;
+    std::unique_ptr<TcpClient> tcpClient_;
 
   private:
     // sdl

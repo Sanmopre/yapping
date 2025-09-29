@@ -18,7 +18,7 @@
 
 ClientApplication::ClientApplication(const std::string &username, const std::string &host, u16 port,
                                      spdlog::logger *logger)
-    : logger_(logger), tcpClient_(std::make_unique<SimpleTcpClient>(logger_)), username_(username)
+    : logger_(logger), tcpClient_(std::make_unique<TcpClient>(logger_)), username_(username)
 {
     tcpClient_->on_connect([&] {
         client::messages::InitialConnection msg;
@@ -40,11 +40,15 @@ ClientApplication::ClientApplication(const std::string &username, const std::str
 
                 messages_.emplace_back(value);
             },
-                       [&](const server::messages::UserStatus &value)
-                       {
-                           usersMap_[value.username].status = value.status;
-                           usersMap_[value.username].color = value.color;
-                       }},
+           [&](const server::messages::UserStatus &value)
+           {
+               usersMap_[value.username].status = value.status;
+               usersMap_[value.username].color = value.color;
+           },
+           [&](const server::messages::ServerResponse &value)
+           {
+              std::ignore = value;
+           }},
             msg);
     });
 

@@ -177,6 +177,12 @@ private:
                     case ClientMessageType::NEW_MESSAGE:
                         on_message_(self->id, client::messages::NewMessage{content});
                         break;
+                    case ClientMessageType::LOGIN:
+                        on_message_(self->id, client::messages::Login{content});
+                        break;
+                    case ClientMessageType::REGISTER:
+                        on_message_(self->id, client::messages::Register{content});
+                        break;
                     }
                 }
 

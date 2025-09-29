@@ -13,14 +13,14 @@
 #include <string>
 #include <thread>
 
-class SimpleTcpClient
+class TcpClient
 {
   public:
-    explicit SimpleTcpClient(spdlog::logger* logger) : logger_(logger), socket_(io_)
+    explicit TcpClient(spdlog::logger* logger) : logger_(logger), socket_(io_)
     {
     }
 
-    ~SimpleTcpClient()
+    ~TcpClient()
     {
         stop();
     }
@@ -182,6 +182,9 @@ class SimpleTcpClient
                     break;
                 case ServerMessageType::USER_STATUS:
                     message_handler_(server::messages::UserStatus{content});
+                    break;
+                case ServerMessageType::SERVER_RESPONSE:
+                    message_handler_(server::messages::ServerResponse{content});
                     break;
                 }
             }

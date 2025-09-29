@@ -130,6 +130,14 @@ int main(int argc, char **argv)
                 dbManager.addMessageEntry(received);
                 srv.broadcast(received);
             },
+            [&](const client::messages::Register& v)
+            {
+                std::ignore = v;
+            },
+            [&](const client::messages::Login& v)
+            {
+                std::ignore = v;
+            },
             [&](const client::messages::InitialConnection& v)
             {
                 logger->info("New user connected message id {} with username {}", id, v.username);

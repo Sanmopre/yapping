@@ -49,10 +49,20 @@ constexpr std::string_view USER_COLOR_KEY = "color";
 constexpr std::string_view COLOR_RED_KEY = "red";
 constexpr std::string_view COLOR_GREEN_KEY = "green";
 constexpr std::string_view COLOR_BLUE_KEY = "blue";
+constexpr std::string_view SERVER_RESPONSE_CODE_KEY = "responseCode";
+constexpr std::string_view PASSWORD_HASH_KEY = "passwordHash";
 
 // Packet keys
 constexpr std::string_view PACKET_HEADER_KEY = "header";
 constexpr std::string_view PACKET_CONTENT_KEY = "content";
+
+enum class ServerResponseCode
+{
+    SUCCESSFUL_REGISTRATION,
+    SUCCESSFUL_LOGIN,
+    USERNAME_ALREADY_EXISTS,
+    INCORRECT_PASSWORD,
+};
 
 enum class UserStatusType
 {
@@ -64,11 +74,26 @@ enum class UserStatusType
 enum class ServerMessageType
 {
     RECEIVED_MESSAGE = 0,
-    USER_STATUS = 1
+    USER_STATUS = 1,
+    SERVER_RESPONSE = 2
 };
 
 enum class ClientMessageType
 {
     INITIAL_CONNECTION = 0,
-    NEW_MESSAGE = 2
+    NEW_MESSAGE = 2,
+    REGISTER = 3,
+    LOGIN = 4
 };
+
+// FNV-1a (64-bit) implementation
+constexpr u64 hash(const std::string_view& stringView)
+{
+    u64 hash = 0xcbf29ce484222325ULL;
+    for (const unsigned char c : stringView)
+    {
+        hash ^= c;
+        hash *= 0x100000001b3ULL;
+    }
+    return hash;
+}

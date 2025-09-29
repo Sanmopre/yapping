@@ -10,7 +10,6 @@
 class DataBaseManager
 {
 public:
-
     explicit DataBaseManager(spdlog::logger* logger);
     ~DataBaseManager();
 
@@ -18,6 +17,9 @@ public:
     // Messages table functions
     void addMessageEntry(const server::messages::NewMessageReceived& message);
     [[nodiscard]] std::vector<server::messages::NewMessageReceived> getMessages() const noexcept;
+
+    // User table functions
+    //void addNewUser()
 
 private:
     // helpers

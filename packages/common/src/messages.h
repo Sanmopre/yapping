@@ -21,6 +21,30 @@ struct UserColor
     u8 blue = 0;
 };
 
+struct ServerResponse
+{
+    explicit ServerResponse(const nlohmann::json &data)
+    {
+        code = data[SERVER_RESPONSE_CODE_KEY].get<ServerResponseCode>();
+    }
+
+    ServerResponse() = default;
+
+    [[nodiscard]] std::string toString() const noexcept
+    {
+        nlohmann::json data;
+        data[PACKET_HEADER_KEY] = ServerMessageType::SERVER_RESPONSE;
+
+        nlohmann::json content;
+        content[SERVER_RESPONSE_CODE_KEY] = code;
+        data[PACKET_CONTENT_KEY] = content;
+
+        return data.dump();
+    }
+
+    ServerResponseCode code;
+};
+
 struct NewMessageReceived
 {
     explicit NewMessageReceived(const nlohmann::json &data)
@@ -92,7 +116,7 @@ struct UserStatus
     u64 timestamp;
 };
 
-using ServerMessage = std::variant<UserStatus, NewMessageReceived>;
+using ServerMessage = std::variant<UserStatus, NewMessageReceived, ServerResponse>;
 
 } // namespace server::messages
 
@@ -147,7 +171,63 @@ struct NewMessage
     std::string message;
 };
 
-using ClientMessage = std::variant<NewMessage, InitialConnection>;
+
+struct Login
+{
+    explicit Login(const nlohmann::json &data)
+    {
+        username = data[USERNAME_KEY].get<std::string>();
+        passwordHash = data[PASSWORD_HASH_KEY].get<u64>();
+    }
+    Login() = default;
+
+    [[nodiscard]] std::string toString() const noexcept
+    {
+        nlohmann::json data;
+        data[PACKET_HEADER_KEY] = ClientMessageType::LOGIN;
+
+        nlohmann::json content;
+        content[USERNAME_KEY] = username;
+        content[PASSWORD_HASH_KEY] = passwordHash;
+
+        data[PACKET_CONTENT_KEY] = content;
+
+        return data.dump();
+    }
+
+    std::string username;
+    u64 passwordHash;
+};
+
+struct Register
+{
+    explicit Register(const nlohmann::json &data)
+    {
+        username = data[USERNAME_KEY].get<std::string>();
+        passwordHash = data[PASSWORD_HASH_KEY].get<u64>();
+    }
+    Register() = default;
+
+    [[nodiscard]] std::string toString() const noexcept
+    {
+        nlohmann::json data;
+        data[PACKET_HEADER_KEY] = ClientMessageType::REGISTER;
+
+        nlohmann::json content;
+        content[USERNAME_KEY] = username;
+        content[PASSWORD_HASH_KEY] = passwordHash;
+
+        data[PACKET_CONTENT_KEY] = content;
+
+        return data.dump();
+    }
+
+    std::string username;
+    u64 passwordHash;
+};
+
+
+using ClientMessage = std::variant<NewMessage, InitialConnection, Login, Register>;
 
 } // namespace client::messages
 

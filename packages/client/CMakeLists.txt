@@ -41,6 +41,8 @@ set(CLIENT_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/src/client_application.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/client_application.h
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compression_utils.h
+        src/data_manager.cpp
+        src/data_manager.h
 )
 
 include_directories(

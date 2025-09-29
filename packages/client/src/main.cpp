@@ -2,7 +2,7 @@
 #include "cmake_constants.h"
 #include "tcp_client.h"
 
-#include "client_application.h"
+#include "imgui_client.h"
 
 // imgui
 #include "imgui_impl_sdl2.h"
@@ -61,9 +61,9 @@ int main(int argc, char **argv)
     logger->info("Starting {} version {}", CLIENT_TARGET_NAME, PROJECT_VERSION);
 
     const auto dataManager = DataManager(username, serverIp, serverPort, logger.get());
-    const auto clientApplication = std::make_unique<ClientApplication>(dataManager, logger.get());
+    const auto imguiClient = std::make_unique<ImguiClient>(dataManager, logger.get());
 
-    if (!clientApplication->initialize())
+    if (!imguiClient->initialize())
     {
         logger->error("Failed to initialize client application");
         return EXIT_FAILURE;
@@ -80,16 +80,16 @@ int main(int argc, char **argv)
             if (event.type == SDL_QUIT)
                 done = true;
             if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE &&
-                event.window.windowID == SDL_GetWindowID(clientApplication->getWindow()))
+                event.window.windowID == SDL_GetWindowID(imguiClient->getWindow()))
                 done = true;
         }
-        if (SDL_GetWindowFlags(clientApplication->getWindow()) & SDL_WINDOW_MINIMIZED)
+        if (SDL_GetWindowFlags(imguiClient->getWindow()) & SDL_WINDOW_MINIMIZED)
         {
             SDL_Delay(10);
             continue;
         }
 
-        clientApplication->update();
+        imguiClient->update();
     }
 
     return EXIT_SUCCESS;

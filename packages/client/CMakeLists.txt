@@ -38,8 +38,8 @@ set(CLIENT_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/../common/src/messages.h
         ${IMGUI_SOURCES}
         ${CMAKE_CURRENT_SOURCE_DIR}/src/chat_imgui_components.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/client_application.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/client_application.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/imgui_client.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/imgui_client.h
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compression_utils.h
         src/data_manager.cpp
         src/data_manager.h

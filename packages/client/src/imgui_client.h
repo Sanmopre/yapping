@@ -15,11 +15,11 @@ struct ApplicationTextures
   SDL_Texture* sendButton;
 };
 
-class ClientApplication
+class ImguiClient
 {
 public:
-  ClientApplication(const DataManager& data, spdlog::logger *logger);
-  ~ClientApplication();
+  ImguiClient(const DataManager& data, spdlog::logger *logger);
+  ~ImguiClient();
 
 public:
   [[nodiscard]] bool initialize();

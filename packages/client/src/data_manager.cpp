@@ -47,6 +47,9 @@ std::map<std::string, UserData> DataManager::getUsers() const noexcept
 
 void DataManager::onConnect()
 {
+  client::messages::InitialConnection msg;
+  msg.username = username;
+  tcpClient_->write(msg);
   logger_->info("Connected");
 }
 

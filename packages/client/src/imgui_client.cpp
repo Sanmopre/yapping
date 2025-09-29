@@ -1,6 +1,6 @@
-#include "client_application.h"
 #include "chat_imgui_components.h"
 #include "compression_utils.h"
+#include "imgui_client.h"
 
 // imgui
 #include "imgui.h"
@@ -17,12 +17,12 @@
 #include "cmake_constants.h"
 
 
-ClientApplication::ClientApplication(const DataManager &data,
+ImguiClient::ImguiClient(const DataManager &data,
                                      spdlog::logger *logger) : data(data), logger_(logger)
 {
 }
 
-ClientApplication::~ClientApplication()
+ImguiClient::~ImguiClient()
 {
     // Cleanup
     ImGui_ImplSDLRenderer2_Shutdown();
@@ -34,7 +34,7 @@ ClientApplication::~ClientApplication()
     SDL_Quit();
 }
 
-bool ClientApplication::initialize()
+bool ImguiClient::initialize()
 {
     // Setup SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
@@ -109,12 +109,12 @@ bool ClientApplication::initialize()
     return true;
 }
 
-void ClientApplication::update()
+void ImguiClient::update()
 {
     render();
 }
 
-void ClientApplication::render()
+void ImguiClient::render()
 {
     // Pre render functions needed for rendering
     preRender();
@@ -182,7 +182,7 @@ void ClientApplication::render()
     postRender();
 }
 
-void ClientApplication::sendMessageContent()
+void ImguiClient::sendMessageContent()
 {
     if (const auto response = data.sendMessage(std::string(messageBuff_)); response)
     {
@@ -191,18 +191,18 @@ void ClientApplication::sendMessageContent()
 }
 
 SDL_Texture *
-ClientApplication::getTexture(const unsigned char *compressedSource,
+ImguiClient::getTexture(const unsigned char *compressedSource,
                               size_t compressedLenght) const {
     const auto uncompressedData = gunzipInMemory(compressedSource, compressedLenght);
     return SDL_CreateTextureFromSurface(renderer_, SDL_LoadBMP_RW(SDL_RWFromConstMem(uncompressedData.data(), uncompressedData.size()), 1));
 }
 
-SDL_Window *ClientApplication::getWindow() const noexcept
+SDL_Window *ImguiClient::getWindow() const noexcept
 {
     return window_;
 }
 
-void ClientApplication::preRender()
+void ImguiClient::preRender()
 {
     // Start the Dear ImGui frame
     ImGui_ImplSDLRenderer2_NewFrame();
@@ -229,7 +229,7 @@ void ClientApplication::preRender()
     ImGui::End();
 }
 
-void ClientApplication::postRender()
+void ImguiClient::postRender()
 {
     // Rendering
     ImGui::Render();

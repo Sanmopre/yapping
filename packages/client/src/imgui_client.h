@@ -15,26 +15,12 @@ enum class ScenesEnum
   CHAT_SCENE
 };
 
-enum class TexturesEnum {
-  LOGO_TEXTURE,
-  BACKGROUND_TEXTURE,
-  SEND_BUTTON_TEXTURE
-};
-
-
-struct ApplicationTextures
-{
-  SDL_Texture* logo;
-  SDL_Texture* chatBackground;
-  SDL_Texture* sendButton;
-};
-
 class Scene;
 
 class ImguiClient
 {
 public:
-  ImguiClient(const DataManager& data, spdlog::logger *logger);
+  ImguiClient(spdlog::logger *logger);
   ~ImguiClient();
 
 public:
@@ -43,6 +29,7 @@ public:
 
 public:
   [[nodiscard]] SDL_Window *getWindow() const noexcept;
+  [[nodiscard]] SDL_Renderer *getRenderer() const noexcept;
   void addScene(ScenesEnum sceneType, std::shared_ptr<Scene> scene);
   void setCurrentScene(ScenesEnum sceneType);
 
@@ -51,21 +38,12 @@ private:
   void postRender();
 
 private:
-  [[nodiscard]] SDL_Texture* getTexture(const unsigned char* compressedSource, size_t compressedLenght) const;
-
-private:
   std::unordered_map<ScenesEnum, std::shared_ptr<Scene>> scenes_;
   std::shared_ptr<Scene> currentScene_;
-  const DataManager& data;
   spdlog::logger *logger_;
 
 private:
   // sdl
   SDL_Window *window_;
   SDL_Renderer *renderer_;
-  ApplicationTextures textures_;
-
-private:
-  // Data containers
-  char messageBuff_[MAX_MESSAGE_LENGTH] = "";
 };

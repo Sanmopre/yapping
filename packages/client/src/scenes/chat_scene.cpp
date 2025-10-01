@@ -20,6 +20,7 @@ ChatScene::ChatScene(
 
 std::optional<ScenesEnum> ChatScene::update()
 {
+  drawBackground();
   drawUsers();
   drawInput();
   drawTopBar();
@@ -127,6 +128,16 @@ void ChatScene::drawTopBar()
     ImGui::Text(PROJECT_VERSION);
   }
   ImGui::EndMainMenuBar();
+}
+
+void ChatScene::drawBackground()
+{
+  ImGuiViewport* vp = ImGui::GetMainViewport();
+  ImDrawList* bg = ImGui::GetBackgroundDrawList(vp);
+  bg->AddImage(reinterpret_cast<ImTextureID>(getTexture(TexturesEnum::BACKGROUND_TEXTURE)),
+               vp->Pos,
+               ImVec2(vp->Pos.x + vp->Size.x, vp->Pos.y + vp->Size.y),
+               ImVec2(0,0), ImVec2(1,1), IM_COL32(255,255,255,255));
 }
 
 void ChatScene::sendMessageContent()

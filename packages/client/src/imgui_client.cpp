@@ -7,18 +7,11 @@
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_sdlrenderer2.h"
 
-// hex_dumps
-#include "logo.h"
-#include "background.h"
-#include "send_button.h"
-#include "liberation_mono_regular.h"
-
 // cmake_constants
 #include "cmake_constants.h"
 #include "scenes/scene.h"
 
-ImguiClient::ImguiClient(const DataManager &data,
-                                     spdlog::logger *logger) : data(data), logger_(logger)
+ImguiClient::ImguiClient(spdlog::logger *logger) : logger_(logger)
 {
 }
 
@@ -75,33 +68,9 @@ bool ImguiClient::initialize()
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-    logger_->info("Loading liberation_mono_regular_ttf font");
-    ImFontConfig font_cfg;
-    font_cfg.FontDataOwnedByAtlas = false;
-
-    std::ignore = ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
-        (void*)liberation_mono_regular_ttf,
-        static_cast<int>(liberation_mono_regular_ttf_len),
-        15.0f,
-        &font_cfg,
-        ImGui::GetIO().Fonts->GetGlyphRangesDefault()
-    );
-
     // Setup Platform/Renderer backends
     ImGui_ImplSDL2_InitForSDLRenderer(window_, renderer_);
     ImGui_ImplSDLRenderer2_Init(renderer_);
-
-    // Load logo texture
-    logger_->info("Loading logo texture");
-    textures_.logo = getTexture(logo_bmp_gz, logo_bmp_gz_len);
-
-    // Load chat background texture
-    logger_->info("Loading chat background texture");
-    textures_.chatBackground = getTexture(background_bmp_gz, background_bmp_gz_len);
-
-    // Load send button texture
-    logger_->info("Loading send button texture");
-    textures_.sendButton = getTexture(send_button_bmp_gz, send_button_bmp_gz_len);
 
     // set style
     setStyle(ImGui::GetStyle());
@@ -137,16 +106,14 @@ void ImguiClient::update()
     postRender();
 }
 
-SDL_Texture *
-ImguiClient::getTexture(const unsigned char *compressedSource,
-                              size_t compressedLenght) const {
-    const auto uncompressedData = gunzipInMemory(compressedSource, compressedLenght);
-    return SDL_CreateTextureFromSurface(renderer_, SDL_LoadBMP_RW(SDL_RWFromConstMem(uncompressedData.data(), uncompressedData.size()), 1));
-}
-
 SDL_Window *ImguiClient::getWindow() const noexcept
 {
     return window_;
+}
+
+SDL_Renderer *ImguiClient::getRenderer() const noexcept
+{
+    return renderer_;
 }
 
 void ImguiClient::addScene(ScenesEnum sceneType, std::shared_ptr<Scene> scene)
@@ -187,13 +154,6 @@ void ImguiClient::preRender()
     const ImGuiID dockspaceId = ImGui::GetID("MyDockspace");
     ImGui::DockSpace(dockspaceId, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
     ImGui::End();
-
-    ImGuiViewport* vp = ImGui::GetMainViewport();
-    ImDrawList* bg = ImGui::GetBackgroundDrawList(vp);
-    bg->AddImage(reinterpret_cast<ImTextureID>(textures_.chatBackground),
-                 vp->Pos,
-                 ImVec2(vp->Pos.x + vp->Size.x, vp->Pos.y + vp->Size.y),
-                 ImVec2(0,0), ImVec2(1,1), IM_COL32(255,255,255,255));
 }
 
 void ImguiClient::postRender()

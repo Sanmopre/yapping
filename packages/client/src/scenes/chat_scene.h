@@ -10,7 +10,6 @@ public:
   ~ChatScene() override = default;
 
 public:
-
   [[nodiscard]] std::optional<ScenesEnum> update() override;
 
 private:
@@ -18,6 +17,7 @@ private:
   void drawUsers();
   void drawInput();
   void drawTopBar();
+  void drawBackground();
 
 private:
   void sendMessageContent();

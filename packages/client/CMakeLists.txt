@@ -46,6 +46,7 @@ set(CLIENT_SOURCES
         src/scenes/chat_scene.cpp
         src/scenes/chat_scene.h
         src/scenes/scene.h
+        src/resources.h
 )
 
 include_directories(

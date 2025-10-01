@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../imgui_client.h"
+#include "../resources.h"
 
 //std
 #include <string>

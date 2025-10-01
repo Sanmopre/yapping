@@ -1,6 +1,6 @@
 #include "chat_imgui_components.h"
 #include "cmake_constants.h"
-#include "tcp_client.h"
+#include "resources.h"
 
 #include "imgui_client.h"
 
@@ -15,6 +15,7 @@
 
 // cli11
 #include "CLI/CLI.hpp"
+#include "scenes/chat_scene.h"
 
 // Main code
 int main(int argc, char **argv)
@@ -61,13 +62,22 @@ int main(int argc, char **argv)
     logger->info("Starting {} version {}", CLIENT_TARGET_NAME, PROJECT_VERSION);
 
     const auto dataManager = DataManager(username, serverIp, serverPort, logger.get());
-    const auto imguiClient = std::make_unique<ImguiClient>(dataManager, logger.get());
+    const auto imguiClient = std::make_unique<ImguiClient>(logger.get());
 
     if (!imguiClient->initialize())
     {
         logger->error("Failed to initialize client application");
         return EXIT_FAILURE;
     }
+
+    logger->info("Loading resources");
+    const auto textureMap = loadTextureMap(imguiClient->getRenderer(), logger.get());
+    std::ignore = loadFontsMap(logger.get());
+    logger->info("Resources loaded");
+
+    const auto chatScene = std::make_shared<ChatScene>(logger.get(), textureMap, dataManager);
+    imguiClient->addScene(ScenesEnum::CHAT_SCENE, chatScene);
+    imguiClient->setCurrentScene(ScenesEnum::CHAT_SCENE);
 
     // Main loop
     bool done = false;

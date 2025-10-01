@@ -43,6 +43,9 @@ set(CLIENT_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/src/compression_utils.h
         src/data_manager.cpp
         src/data_manager.h
+        src/scenes/chat_scene.cpp
+        src/scenes/chat_scene.h
+        src/scenes/scene.h
 )
 
 include_directories(

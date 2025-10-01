@@ -15,7 +15,7 @@
 
 // cmake_constants
 #include "cmake_constants.h"
-
+#include "scenes/scene.h"
 
 ImguiClient::ImguiClient(const DataManager &data,
                                      spdlog::logger *logger) : data(data), logger_(logger)
@@ -111,83 +111,30 @@ bool ImguiClient::initialize()
 
 void ImguiClient::update()
 {
-    render();
-}
-
-void ImguiClient::render()
-{
     // Pre render functions needed for rendering
     preRender();
 
-    ImGuiViewport* vp = ImGui::GetMainViewport();
-    ImDrawList* bg = ImGui::GetBackgroundDrawList(vp);
-    bg->AddImage(reinterpret_cast<ImTextureID>(textures_.chatBackground),
-                 vp->Pos,
-                 ImVec2(vp->Pos.x + vp->Size.x, vp->Pos.y + vp->Size.y),
-                 ImVec2(0,0), ImVec2(1,1), IM_COL32(255,255,255,255));
-
-    renderUsersWindow(data.getUsers());
-
-    if (ImGui::BeginMainMenuBar())
+    if (currentScene_ == nullptr)
     {
-        ImGui::Image(reinterpret_cast<ImTextureID>(textures_.logo), ImVec2(32,32));
-        ImGui::SameLine();
-        ImGui::Text(PROJECT_VERSION);
+        logger_->error("Current scene is nullptr");
+        return;
     }
-    ImGui::EndMainMenuBar();
 
-    if (ImGui::Begin("Input"))
+    // Update the current scene, and check if the scene requested a scene change
+    if (const auto maybeNextScene = currentScene_->update(); maybeNextScene.has_value())
     {
-        // Or if you want it to send on Enter:
-        if (ImGui::InputText("##msg", messageBuff_, IM_ARRAYSIZE(messageBuff_), ImGuiInputTextFlags_EnterReturnsTrue))
+        if (const auto it = scenes_.find(maybeNextScene.value()); it != scenes_.end())
         {
-            sendMessageContent();
+            currentScene_ = scenes_.at(maybeNextScene.value());
         }
-        ImGui::SameLine();
-
-        ImVec2 size(20, 20);
-        if (ImGui::ImageButton("send_button", reinterpret_cast<ImTextureID>(textures_.sendButton), size))
+        else
         {
-            sendMessageContent();
+            logger_->error("Requested scene {} not found", static_cast<u8>(maybeNextScene.value()));
         }
     }
-    ImGui::End();
-
-    if (ImGui::Begin("Chat"))
-    {
-        bool isAtBottom =  ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 1.0f;
-
-        for (const auto &message : data.getMessages())
-        {
-            if (const auto it = data.getUsers().find(message.username); it != data.getUsers().end())
-            {
-                renderServerMessage(message, data.getUsername(), data.getUsers().at(message.username).color);
-            }
-            else
-            {
-                renderServerMessage(message, data.getUsername(), server::messages::UserColor{100, 100, 100});
-            }
-        }
-
-        if (isAtBottom)
-        {
-            ImGui::SetScrollHereY(0.0f);
-        }
-
-    }
-    ImGui::End();
-
 
     // Post rendering functions needed for frame clean up
     postRender();
-}
-
-void ImguiClient::sendMessageContent()
-{
-    if (const auto response = data.sendMessage(std::string(messageBuff_)); response)
-    {
-        messageBuff_[0] = '\0';
-    }
 }
 
 SDL_Texture *
@@ -200,6 +147,19 @@ ImguiClient::getTexture(const unsigned char *compressedSource,
 SDL_Window *ImguiClient::getWindow() const noexcept
 {
     return window_;
+}
+
+void ImguiClient::addScene(ScenesEnum sceneType, std::shared_ptr<Scene> scene)
+{
+    scenes_.try_emplace(sceneType, scene);
+}
+
+void ImguiClient::setCurrentScene(ScenesEnum sceneType)
+{
+    if (const auto it = scenes_.find(sceneType); it != scenes_.end())
+    {
+        currentScene_ = it->second;
+    }
 }
 
 void ImguiClient::preRender()
@@ -227,6 +187,13 @@ void ImguiClient::preRender()
     const ImGuiID dockspaceId = ImGui::GetID("MyDockspace");
     ImGui::DockSpace(dockspaceId, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
     ImGui::End();
+
+    ImGuiViewport* vp = ImGui::GetMainViewport();
+    ImDrawList* bg = ImGui::GetBackgroundDrawList(vp);
+    bg->AddImage(reinterpret_cast<ImTextureID>(textures_.chatBackground),
+                 vp->Pos,
+                 ImVec2(vp->Pos.x + vp->Size.x, vp->Pos.y + vp->Size.y),
+                 ImVec2(0,0), ImVec2(1,1), IM_COL32(255,255,255,255));
 }
 
 void ImguiClient::postRender()

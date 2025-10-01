@@ -8,12 +8,28 @@
 constexpr u16 WINDOW_WIDTH = 1280;
 constexpr u16 WINDOW_HEIGHT = 720;
 
+enum class ScenesEnum
+{
+  SELECT_SERVER_SCENE,
+  REGISTER_LOGIN_SCENE,
+  CHAT_SCENE
+};
+
+enum class TexturesEnum {
+  LOGO_TEXTURE,
+  BACKGROUND_TEXTURE,
+  SEND_BUTTON_TEXTURE
+};
+
+
 struct ApplicationTextures
 {
   SDL_Texture* logo;
   SDL_Texture* chatBackground;
   SDL_Texture* sendButton;
 };
+
+class Scene;
 
 class ImguiClient
 {
@@ -27,17 +43,19 @@ public:
 
 public:
   [[nodiscard]] SDL_Window *getWindow() const noexcept;
+  void addScene(ScenesEnum sceneType, std::shared_ptr<Scene> scene);
+  void setCurrentScene(ScenesEnum sceneType);
 
 private:
   void preRender();
   void postRender();
-  void render();
-  void sendMessageContent();
 
 private:
   [[nodiscard]] SDL_Texture* getTexture(const unsigned char* compressedSource, size_t compressedLenght) const;
 
 private:
+  std::unordered_map<ScenesEnum, std::shared_ptr<Scene>> scenes_;
+  std::shared_ptr<Scene> currentScene_;
   const DataManager& data;
   spdlog::logger *logger_;
 

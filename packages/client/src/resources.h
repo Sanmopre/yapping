@@ -14,13 +14,15 @@
 // std
 #include <unordered_map>
 
-enum class TexturesEnum {
+enum class TexturesEnum
+{
   LOGO_TEXTURE,
   BACKGROUND_TEXTURE,
   SEND_BUTTON_TEXTURE
 };
 
-enum class FontsEnum {
+enum class FontsEnum
+{
   LIBERATION_MONO_REGULAR_FONT
 };
 

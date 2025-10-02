@@ -1,14 +1,11 @@
 #include "data_manager.h"
 
-DataManager::DataManager(const std::string &username, const std::string &host,
-                         u16 port, spdlog::logger *logger) :
+DataManager::DataManager(const std::string &username, spdlog::logger *logger) :
  logger_(logger), tcpClient_(std::make_unique<TcpClient>(logger)), username(username)
 {
   tcpClient_->on_connect([this]{onConnect();});
   tcpClient_->on_disconnect([this]{onDisconnect();});
   tcpClient_->on_message([this](const server::messages::ServerMessage &&msg){onMessage(msg);});
-
-  tcpClient_->connect(host, port);
 }
 
 DataManager::~DataManager()
@@ -43,6 +40,11 @@ DataManager::getMessages() const noexcept
 std::map<std::string, UserData> DataManager::getUsers() const noexcept
 {
   return usersMap_;
+}
+
+void DataManager::connect(const std::string &host, u16 port) const noexcept
+{
+  tcpClient_->connect(host, port);
 }
 
 void DataManager::onConnect()

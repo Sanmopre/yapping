@@ -15,7 +15,11 @@
 
 // cli11
 #include "CLI/CLI.hpp"
+
+// scenes
 #include "scenes/chat_scene.h"
+#include "scenes/login_register_scene.h"
+#include "scenes/server_selection_scene.h"
 
 // Main code
 int main(int argc, char **argv)
@@ -35,15 +39,13 @@ int main(int argc, char **argv)
             {
                 return std::string("Username must be at most 12 characters long");
             }
-            return std::string{}; // no error
+            return std::string{};
         });
 
     clientCliApplication.add_option("-i,--ip", serverIp, "IPv4 address of the server to connect to")
-        ->required()
         ->check(CLI::ValidIPV4);
 
     clientCliApplication.add_option("-p,--port", serverPort, "Port of the server to connect to")
-        ->required()
         ->check(CLI::Range(1, 65535));
 
     clientCliApplication
@@ -61,7 +63,7 @@ int main(int argc, char **argv)
 
     logger->info("Starting {} version {}", CLIENT_TARGET_NAME, PROJECT_VERSION);
 
-    const auto dataManager = DataManager(username, serverIp, serverPort, logger.get());
+    const auto dataManager = DataManager(username, logger.get());
     const auto imguiClient = std::make_unique<ImguiClient>(logger.get());
 
     if (!imguiClient->initialize())
@@ -76,8 +78,14 @@ int main(int argc, char **argv)
     logger->info("Resources loaded");
 
     const auto chatScene = std::make_shared<ChatScene>(logger.get(), textureMap, dataManager);
+    const auto registerLoginScene = std::make_shared<LoginRegisterScene>(logger.get(), textureMap, dataManager, username);
+    const auto serverSelectionScene = std::make_shared<ServerSelectionScene>(logger.get(), textureMap, dataManager,serverIp, serverPort);
+
     imguiClient->addScene(ScenesEnum::CHAT_SCENE, chatScene);
-    imguiClient->setCurrentScene(ScenesEnum::CHAT_SCENE);
+    imguiClient->addScene(ScenesEnum::REGISTER_LOGIN_SCENE, registerLoginScene);
+    imguiClient->addScene(ScenesEnum::SELECT_SERVER_SCENE, serverSelectionScene);
+
+    imguiClient->setCurrentScene(ScenesEnum::SELECT_SERVER_SCENE);
 
     // Main loop
     bool done = false;

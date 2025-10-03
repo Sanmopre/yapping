@@ -34,17 +34,24 @@ std::optional<ScenesEnum> LoginRegisterScene::update()
   if (ImGui::Button("Login"))
   {
     ImGui::End();
+    client::messages::Login lgnMessage;
+    lgnMessage.passwordHash = hashImpl(std::string(passwordBuff_));
+    lgnMessage.username = std::string(usernameBuff_);
+    std::ignore = getData().sendMessage(lgnMessage.toString());
     return ScenesEnum::CHAT_SCENE;
   }
-
   ImGui::SameLine();
 
   if (ImGui::Button("Register"))
   {
     ImGui::End();
+    client::messages::Register rgsMessage;
+    rgsMessage.passwordHash = hashImpl(std::string(passwordBuff_));
+    rgsMessage.username = std::string(usernameBuff_);
+    std::ignore = getData().sendMessage(rgsMessage.toString());
     return ScenesEnum::CHAT_SCENE;
   }
-
   ImGui::End();
+
   return std::nullopt;
 }

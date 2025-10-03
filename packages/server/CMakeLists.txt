@@ -22,6 +22,9 @@ set(SERVER_SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/../common/src/messages.h
         ${CMAKE_CURRENT_SOURCE_DIR}/src/db_manager.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/src/db_manager.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/data_manager.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/data_manager.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/utils.h
 )
 
 include_directories(

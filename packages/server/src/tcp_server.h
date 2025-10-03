@@ -20,14 +20,14 @@
 #include <thread>
 #include <unordered_map>
 
-class SimpleTcpServerMulti {
+class TcpServerMulti {
 public:
-    explicit SimpleTcpServerMulti(u16 port,
+    explicit TcpServerMulti(u16 port,
                                   const asio::ip::address& addr = asio::ip::address_v4::any())
         : io_(),
           acceptor_(io_, asio::ip::tcp::endpoint(addr, port)) {}
 
-    ~SimpleTcpServerMulti() { stop(); }
+    ~TcpServerMulti() { stop(); }
 
     // Start the server (spawns the io thread)
     void start() {

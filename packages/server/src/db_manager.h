@@ -19,7 +19,9 @@ public:
     [[nodiscard]] std::vector<server::messages::NewMessageReceived> getMessages() const noexcept;
 
     // User table functions
-    //void addNewUser()
+    void addNewUser(const std::string& username, u64 passwordHash);
+    [[nodiscard]] bool userExists(const std::string& username);
+    [[nodiscard]] u64 userPasswordHash(const std::string& username);
 
 private:
     // helpers

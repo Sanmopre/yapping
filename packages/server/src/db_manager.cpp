@@ -140,3 +140,15 @@ std::vector<server::messages::NewMessageReceived> DataBaseManager::getMessages()
     finalizeSilently(stmt);
     return out;
 }
+
+void DataBaseManager::addNewUser(const std::string& username, u64 passwordHash)
+{
+}
+
+bool DataBaseManager::userExists(const std::string& username)
+{
+}
+
+u64 DataBaseManager::userPasswordHash(const std::string& username)
+{
+}

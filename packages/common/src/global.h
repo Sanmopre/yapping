@@ -87,10 +87,10 @@ enum class ClientMessageType
 };
 
 // FNV-1a (64-bit) implementation
-constexpr u64 hash(const std::string_view& stringView)
+[[nodiscard]] inline u64 hashImpl(const std::string& string)
 {
     u64 hash = 0xcbf29ce484222325ULL;
-    for (const unsigned char c : stringView)
+    for (const unsigned char c : string)
     {
         hash ^= c;
         hash *= 0x100000001b3ULL;

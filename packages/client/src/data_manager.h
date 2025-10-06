@@ -10,6 +10,7 @@ public:
 
 public:
   [[nodiscard]] bool sendMessage(const std::string& message) const noexcept;
+  void setUsername(const std::string& username) const noexcept;
   [[nodiscard]] std::string getUsername() const noexcept;
   [[nodiscard]] std::vector<server::messages::NewMessageReceived> getMessages() const noexcept;
   [[nodiscard]] std::map<std::string, UserData> getUsers() const noexcept;
@@ -32,6 +33,7 @@ private:
 
 private:
   // Data containers
+  mutable std::string username_;
   ServerResponseCode latestServerResponse_;
   std::map<std::string, UserData> usersMap_;
   std::vector<server::messages::NewMessageReceived> messages_;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "global.h"
+
 // sdl2
 #include "SDL.h"
 

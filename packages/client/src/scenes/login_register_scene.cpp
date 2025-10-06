@@ -27,6 +27,7 @@ std::optional<ScenesEnum> LoginRegisterScene::update()
        client::messages::InitialConnection initialConnection;
        initialConnection.username = usernameBuff_;
        std::ignore = getData().sendMessage(initialConnection.toString());
+     getData().setUsername(usernameBuff_);
        return ScenesEnum::CHAT_SCENE;
      }
    case ServerResponseCode::SUCCESSFUL_REGISTRATION:
@@ -34,6 +35,7 @@ std::optional<ScenesEnum> LoginRegisterScene::update()
        client::messages::InitialConnection initialConnection;
        initialConnection.username = usernameBuff_;
        std::ignore = getData().sendMessage(initialConnection.toString());
+     getData().setUsername(usernameBuff_);
        return ScenesEnum::CHAT_SCENE;
      }
    case ServerResponseCode::USERNAME_ALREADY_EXISTS:

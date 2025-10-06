@@ -1,6 +1,7 @@
 #include "chat_imgui_components.h"
 #include "compression_utils.h"
 #include "imgui_client.h"
+#include "scenes/scene.h"
 
 // imgui
 #include "imgui.h"
@@ -9,7 +10,6 @@
 
 // cmake_constants
 #include "cmake_constants.h"
-#include "scenes/scene.h"
 
 ImguiClient::ImguiClient(spdlog::logger *logger) : logger_(logger)
 {

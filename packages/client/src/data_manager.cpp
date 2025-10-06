@@ -27,6 +27,15 @@ bool DataManager::sendMessage(const std::string &message) const noexcept
   return true;
 }
 
+void DataManager::setUsername(const std::string &username) const noexcept
+{
+  username_ = username;
+}
+
+std::string DataManager::getUsername() const noexcept {
+  return username_;
+}
+
 std::vector<server::messages::NewMessageReceived>
 DataManager::getMessages() const noexcept
 {

@@ -26,7 +26,7 @@ std::optional<ScenesEnum> LoginRegisterScene::update()
      {
        client::messages::InitialConnection initialConnection;
        initialConnection.username = usernameBuff_;
-       std::ignore = getData().sendMessage(initialConnection.toString());
+       getData().sendClientMessage(initialConnection);
      getData().setUsername(usernameBuff_);
        return ScenesEnum::CHAT_SCENE;
      }
@@ -34,7 +34,7 @@ std::optional<ScenesEnum> LoginRegisterScene::update()
      {
        client::messages::InitialConnection initialConnection;
        initialConnection.username = usernameBuff_;
-       std::ignore = getData().sendMessage(initialConnection.toString());
+       getData().sendClientMessage(initialConnection);
      getData().setUsername(usernameBuff_);
        return ScenesEnum::CHAT_SCENE;
      }
@@ -66,7 +66,7 @@ std::optional<ScenesEnum> LoginRegisterScene::update()
     client::messages::Login lgnMessage;
     lgnMessage.passwordHash = hashImpl(std::string(passwordBuff_));
     lgnMessage.username = std::string(usernameBuff_);
-    std::ignore = getData().sendMessage(lgnMessage.toString());
+    getData().sendClientMessage(lgnMessage);
     waitingForServerResponse_ = true;
   }
   ImGui::SameLine();
@@ -76,7 +76,7 @@ std::optional<ScenesEnum> LoginRegisterScene::update()
     client::messages::Register rgsMessage;
     rgsMessage.passwordHash = hashImpl(std::string(passwordBuff_));
     rgsMessage.username = std::string(usernameBuff_);
-    std::ignore = getData().sendMessage(rgsMessage.toString());
+    getData().sendClientMessage(rgsMessage);
     waitingForServerResponse_ = true;
   }
   ImGui::End();

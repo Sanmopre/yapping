@@ -142,7 +142,7 @@ void ChatScene::drawBackground()
 
 void ChatScene::sendMessageContent()
 {
-  if (const auto response = getData().sendMessage(std::string(messageBuff_)); response)
+  if (const auto response = getData().sendChatMessageContent(std::string(messageBuff_)); response)
   {
     messageBuff_[0] = '\0';
   }

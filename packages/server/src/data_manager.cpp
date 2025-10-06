@@ -67,6 +67,7 @@ void DataManager::manageMessageContent(u64 id, const client::messages::Register&
     if (dbManager_->userExists(value.username))
     {
         response.code = ServerResponseCode::USERNAME_ALREADY_EXISTS;
+        logger_->info("User {} already exists in the db", id, value.username);
         tcpServer_->write(id, response);
         return;
     }

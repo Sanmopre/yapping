@@ -9,7 +9,8 @@ public:
   ~DataManager();
 
 public:
-  [[nodiscard]] bool sendMessage(const std::string& message) const noexcept;
+  [[nodiscard]] bool sendChatMessageContent(const std::string& message) const noexcept;
+  void sendClientMessage(const client::messages::ClientMessage& clientMessage) const noexcept;
   void setUsername(const std::string& username) const noexcept;
   [[nodiscard]] std::string getUsername() const noexcept;
   [[nodiscard]] std::vector<server::messages::NewMessageReceived> getMessages() const noexcept;

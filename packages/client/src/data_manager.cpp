@@ -13,7 +13,7 @@ DataManager::~DataManager()
   tcpClient_->stop();
 }
 
-bool DataManager::sendMessage(const std::string &message) const noexcept
+bool DataManager::sendChatMessageContent(const std::string &message) const noexcept
 {
   if (message.empty())
   {
@@ -26,6 +26,11 @@ bool DataManager::sendMessage(const std::string &message) const noexcept
 
   return true;
 }
+void DataManager::sendClientMessage(
+    const client::messages::ClientMessage &clientMessage) const noexcept {
+  tcpClient_->write(clientMessage);
+}
+
 
 void DataManager::setUsername(const std::string &username) const noexcept
 {

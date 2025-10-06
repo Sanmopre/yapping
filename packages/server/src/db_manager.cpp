@@ -13,14 +13,14 @@ CREATE TABLE IF NOT EXISTS messages (
 );
 )SQL";
 
-
 static constexpr std::string_view createUsersTableSQL = R"SQL(
 CREATE TABLE IF NOT EXISTS users (
     id        INTEGER PRIMARY KEY AUTOINCREMENT,
-    username  TEXT    NOT NULL,
-    password  TEXT    NOT NULL
+    username     TEXT    NOT NULL,
+    passwordHash INTEGER NOT NULL
 );
 )SQL";
+
 
 DataBaseManager::DataBaseManager(spdlog::logger *logger)
     : logger_(logger)
@@ -143,12 +143,88 @@ std::vector<server::messages::NewMessageReceived> DataBaseManager::getMessages()
 
 void DataBaseManager::addNewUser(const std::string& username, u64 passwordHash)
 {
+    static constexpr std::string_view kInsertSQL =
+     "INSERT INTO users (username, passwordHash) VALUES (?, ?);";
+
+    sqlite3_stmt* stmt = nullptr;
+    int rc = sqlite3_prepare_v2(db_, kInsertSQL.data(), -1, &stmt, nullptr);
+    if (rc != SQLITE_OK)
+    {
+        const std::string err = sqlite3_errmsg(db_);
+        finalizeSilently(stmt);
+        logger_->error("Failed to prepare INSERT: {}", err);
+    }
+
+    sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int64(stmt, 2, static_cast<sqlite3_int64>(passwordHash));
+
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE)
+    {
+        std::string err = sqlite3_errmsg(db_);
+        finalizeSilently(stmt);
+        logger_->error("Failed to execute INSERT: {}", err);
+    }
+
+    finalizeSilently(stmt);
 }
 
 bool DataBaseManager::userExists(const std::string& username)
 {
+    static constexpr std::string_view kSelectSQL =
+        "SELECT 1 FROM users WHERE username = ? LIMIT 1;";
+
+    sqlite3_stmt* stmt = nullptr;
+    int rc = sqlite3_prepare_v2(db_, kSelectSQL.data(), -1, &stmt, nullptr);
+    if (rc != SQLITE_OK)
+    {
+        logger_->error("Failed to prepare SELECT (userExists): {}", sqlite3_errmsg(db_));
+        finalizeSilently(stmt);
+        return false;
+    }
+
+    sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT);
+
+    rc = sqlite3_step(stmt);
+    const bool exists = (rc == SQLITE_ROW);
+
+    if (rc != SQLITE_ROW && rc != SQLITE_DONE)
+    {
+        logger_->error("Failed to execute SELECT (userExists): {}", sqlite3_errmsg(db_));
+    }
+
+    finalizeSilently(stmt);
+    return exists;
 }
 
 u64 DataBaseManager::userPasswordHash(const std::string& username)
 {
+    static constexpr std::string_view kSelectSQL =
+        "SELECT passwordHash FROM users WHERE username = ? LIMIT 1;";
+
+    sqlite3_stmt* stmt = nullptr;
+    int rc = sqlite3_prepare_v2(db_, kSelectSQL.data(), -1, &stmt, nullptr);
+    if (rc != SQLITE_OK)
+    {
+        logger_->error("Failed to prepare SELECT (userPasswordHash): {}", sqlite3_errmsg(db_));
+        finalizeSilently(stmt);
+        return 0;
+    }
+
+    sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_TRANSIENT);
+
+    u64 hash = 0;
+    rc = sqlite3_step(stmt);
+    if (rc == SQLITE_ROW)
+    {
+        const sqlite3_int64 h = sqlite3_column_int64(stmt, 0);
+        hash = static_cast<u64>(h);
+    }
+    else if (rc != SQLITE_DONE)
+    {
+        logger_->error("Failed to execute SELECT (userPasswordHash): {}", sqlite3_errmsg(db_));
+    }
+
+    finalizeSilently(stmt);
+    return hash;
 }

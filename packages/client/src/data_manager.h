@@ -5,7 +5,7 @@
 class DataManager
 {
 public:
-  DataManager(const std::string &username, spdlog::logger *logger);
+  DataManager(spdlog::logger *logger);
   ~DataManager();
 
 public:
@@ -13,6 +13,7 @@ public:
   [[nodiscard]] std::string getUsername() const noexcept;
   [[nodiscard]] std::vector<server::messages::NewMessageReceived> getMessages() const noexcept;
   [[nodiscard]] std::map<std::string, UserData> getUsers() const noexcept;
+  [[nodiscard]] ServerResponseCode getServerResponseCode() const noexcept;
   void connect(const std::string &host, u16 port) const noexcept;
 
 private:
@@ -31,7 +32,7 @@ private:
 
 private:
   // Data containers
-  const std::string username;
+  ServerResponseCode latestServerResponse_;
   std::map<std::string, UserData> usersMap_;
   std::vector<server::messages::NewMessageReceived> messages_;
 };

@@ -14,6 +14,34 @@ LoginRegisterScene::LoginRegisterScene(
 
 std::optional<ScenesEnum> LoginRegisterScene::update()
 {
+  if (waitingForServerResponse_)
+  {
+   switch (getData().getServerResponseCode())
+   {
+   case ServerResponseCode::INCORRECT_PASSWORD:
+     break;
+   case ServerResponseCode::NONE:
+      break;
+   case ServerResponseCode::SUCCESSFUL_LOGIN:
+     {
+       client::messages::InitialConnection initialConnection;
+       initialConnection.username = usernameBuff_;
+       std::ignore = getData().sendMessage(initialConnection.toString());
+       return ScenesEnum::CHAT_SCENE;
+     }
+   case ServerResponseCode::SUCCESSFUL_REGISTRATION:
+     {
+       client::messages::InitialConnection initialConnection;
+       initialConnection.username = usernameBuff_;
+       std::ignore = getData().sendMessage(initialConnection.toString());
+       return ScenesEnum::CHAT_SCENE;
+     }
+   case ServerResponseCode::USERNAME_ALREADY_EXISTS:
+     break;
+   case ServerResponseCode::USERNAME_DOES_NOT_EXIST:
+      break;
+   }
+  }
  return drawLogin();
 }
 
@@ -33,23 +61,21 @@ std::optional<ScenesEnum> LoginRegisterScene::update()
 
   if (ImGui::Button("Login"))
   {
-    ImGui::End();
     client::messages::Login lgnMessage;
     lgnMessage.passwordHash = hashImpl(std::string(passwordBuff_));
     lgnMessage.username = std::string(usernameBuff_);
     std::ignore = getData().sendMessage(lgnMessage.toString());
-    return ScenesEnum::CHAT_SCENE;
+    waitingForServerResponse_ = true;
   }
   ImGui::SameLine();
 
   if (ImGui::Button("Register"))
   {
-    ImGui::End();
     client::messages::Register rgsMessage;
     rgsMessage.passwordHash = hashImpl(std::string(passwordBuff_));
     rgsMessage.username = std::string(usernameBuff_);
     std::ignore = getData().sendMessage(rgsMessage.toString());
-    return ScenesEnum::CHAT_SCENE;
+    waitingForServerResponse_ = true;
   }
   ImGui::End();
 

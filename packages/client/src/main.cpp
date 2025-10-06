@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 
     logger->info("Starting {} version {}", CLIENT_TARGET_NAME, PROJECT_VERSION);
 
-    const auto dataManager = DataManager(username, logger.get());
+    const auto dataManager = DataManager(logger.get());
     const auto imguiClient = std::make_unique<ImguiClient>(logger.get());
 
     if (!imguiClient->initialize())

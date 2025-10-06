@@ -38,10 +38,42 @@ void DataManager::connect(const std::string& ip, u16 port)
 
 void DataManager::manageMessageContent(u64 id, const client::messages::Login& value)
 {
+    logger_->info("User {} trying to login", id, value.username);
+    server::messages::ServerResponse response;
+
+    if (!dbManager_->userExists(value.username))
+    {
+        response.code = ServerResponseCode::USERNAME_DOES_NOT_EXIST;
+        tcpServer_->write(id, response);
+        return;
+    }
+
+    if (dbManager_->userPasswordHash(value.username) != value.passwordHash)
+    {
+        response.code = ServerResponseCode::INCORRECT_PASSWORD;
+        tcpServer_->write(id, response);
+        return;
+    }
+
+    response.code = ServerResponseCode::SUCCESSFUL_LOGIN;
+    tcpServer_->write(id, response);
 }
 
 void DataManager::manageMessageContent(u64 id, const client::messages::Register& value)
 {
+    logger_->info("User {} trying to register", id, value.username);
+    server::messages::ServerResponse response;
+
+    if (dbManager_->userExists(value.username))
+    {
+        response.code = ServerResponseCode::USERNAME_ALREADY_EXISTS;
+        tcpServer_->write(id, response);
+        return;
+    }
+
+    response.code = ServerResponseCode::SUCCESSFUL_REGISTRATION;
+    dbManager_->addNewUser(value.username, value.passwordHash);
+    tcpServer_->write(id, response);
 }
 
 void DataManager::manageMessageContent(u64 id, const client::messages::InitialConnection& value)

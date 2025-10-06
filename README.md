@@ -16,6 +16,7 @@ The application uses the following libraries:
 - [SDL2](https://www.libsdl.org/)
 - [spdlog](https://github.com/gabime/spdlog)
 - [zlib](https://github.com/madler/zlib)
+- [SQLite](https://sqlite.org/)
 
 ## Build from source
 First add all the necessary submodules with

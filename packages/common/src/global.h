@@ -58,8 +58,10 @@ constexpr std::string_view PACKET_CONTENT_KEY = "content";
 
 enum class ServerResponseCode
 {
+    NONE = 0,
     SUCCESSFUL_REGISTRATION,
     SUCCESSFUL_LOGIN,
+    USERNAME_DOES_NOT_EXIST,
     USERNAME_ALREADY_EXISTS,
     INCORRECT_PASSWORD,
 };

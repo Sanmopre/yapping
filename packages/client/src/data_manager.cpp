@@ -1,7 +1,7 @@
 #include "data_manager.h"
 
-DataManager::DataManager(const std::string &username, spdlog::logger *logger) :
- logger_(logger), tcpClient_(std::make_unique<TcpClient>(logger)), username(username)
+DataManager::DataManager(spdlog::logger *logger) :
+ logger_(logger), tcpClient_(std::make_unique<TcpClient>(logger))
 {
   tcpClient_->on_connect([this]{onConnect();});
   tcpClient_->on_disconnect([this]{onDisconnect();});
@@ -27,10 +27,6 @@ bool DataManager::sendMessage(const std::string &message) const noexcept
   return true;
 }
 
-std::string DataManager::getUsername() const noexcept
-{
-  return username;
-}
 std::vector<server::messages::NewMessageReceived>
 DataManager::getMessages() const noexcept
 {
@@ -42,6 +38,11 @@ std::map<std::string, UserData> DataManager::getUsers() const noexcept
   return usersMap_;
 }
 
+ServerResponseCode DataManager::getServerResponseCode() const noexcept
+{
+  return latestServerResponse_;
+}
+
 void DataManager::connect(const std::string &host, u16 port) const noexcept
 {
   tcpClient_->connect(host, port);
@@ -49,9 +50,6 @@ void DataManager::connect(const std::string &host, u16 port) const noexcept
 
 void DataManager::onConnect()
 {
-  client::messages::InitialConnection msg;
-  msg.username = username;
-  tcpClient_->write(msg);
   logger_->info("Connected");
 }
 
@@ -91,5 +89,5 @@ void DataManager::manageMessageContent(
 void DataManager::manageMessageContent(
     const server::messages::ServerResponse &value)
 {
-  std::ignore = value;
+  latestServerResponse_ = value.code;
 }

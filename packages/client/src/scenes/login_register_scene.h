@@ -19,4 +19,5 @@ private:
   // Data containers
   char usernameBuff_[12] = "";
   char passwordBuff_[32] = "";
+  bool waitingForServerResponse_ = false;
 };
